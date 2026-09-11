@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="admin_primary">#FF6A1B9A</color>
+    <color name="admin_primary_light">#FFE1BEE7</color>
+    <color name="admin_secondary">#FFFF6F00</color>
+    <color name="admin_background">#FFF5F5F5</color>
+    <color name="admin_surface">#FFFFFFFF</color>
+    <color name="admin_error">#FFD32F2F</color>
+    <color name="admin_success">#FF388E3C</color>
+    <color name="admin_warning">#FFF57C00</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+</resources>

@@ -1,0 +1,43 @@
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Backend
+backend/build/
+backend/.gradle/
+backend/uploads/
+
+# Android
+customer-app/build/
+admin-app/build/
+app/build/
+
+# Environment
+.env
+*.env.local
+
+# Uploads
+uploads/
+test-uploads/
+
+# Gradle wrapper jar (reproducible from properties)
+# gradle/wrapper/gradle-wrapper.jar
+# backend/gradle/wrapper/gradle-wrapper.jar
+
+# Signing keys (never commit)
+*.jks
+*.keystore
+keystore.properties
+
+# Temp/OS
+*.swp
+*~
+Thumbs.db
+.devin/
