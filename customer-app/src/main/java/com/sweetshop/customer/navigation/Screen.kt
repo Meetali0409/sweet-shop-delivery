@@ -14,6 +14,7 @@ sealed class Screen(val route: String) {
     }
     data object Cart : Screen("cart")
     data object AddressSelection : Screen("address_selection")
+    data object AddAddress : Screen("add_address")
     data object Checkout : Screen("checkout")
     data object OrderConfirmation : Screen("order_confirmation/{orderId}") {
         fun createRoute(orderId: Long) = "order_confirmation/$orderId"

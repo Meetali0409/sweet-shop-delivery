@@ -58,6 +58,7 @@ import com.sweetshop.customer.ui.theme.SweetPink
 fun AddressSelectionScreen(
     onNavigateBack: () -> Unit,
     onAddressSelected: () -> Unit,
+    onAddAddress: () -> Unit = {},
     viewModel: CheckoutViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -71,7 +72,7 @@ fun AddressSelectionScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = viewModel::toggleAddressForm,
+                onClick = onAddAddress,
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(Icons.Default.Add, "Add Address")
@@ -104,7 +105,7 @@ fun AddressSelectionScreen(
                     title = "No addresses saved",
                     subtitle = "Add a delivery address to continue",
                     actionLabel = "Add Address",
-                    onAction = viewModel::toggleAddressForm
+                    onAction = onAddAddress
                 )
                 else -> {
                     LazyColumn(
@@ -127,16 +128,6 @@ fun AddressSelectionScreen(
         }
     }
 
-    // Address Form Dialog
-    if (state.showAddressForm) {
-        AddressFormDialog(
-            address = state.newAddress,
-            isSaving = state.isSavingAddress,
-            onAddressChange = viewModel::updateNewAddress,
-            onSave = viewModel::saveNewAddress,
-            onDismiss = viewModel::toggleAddressForm
-        )
-    }
 }
 
 @Composable

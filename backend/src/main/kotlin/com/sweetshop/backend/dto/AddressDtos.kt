@@ -2,6 +2,7 @@ package com.sweetshop.backend.dto
 
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class AddressDto(
@@ -15,6 +16,9 @@ data class AddressDto(
     val state: String,
     val pincode: String,
     val landmark: String?,
+    val latitude: BigDecimal?,
+    val longitude: BigDecimal?,
+    val addressType: String?,
     val isDefault: Boolean,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime
@@ -44,6 +48,9 @@ data class CreateAddressRequest(
     val pincode: String,
 
     val landmark: String? = null,
+    val latitude: BigDecimal? = null,
+    val longitude: BigDecimal? = null,
+    val addressType: String? = "HOME",
     val isDefault: Boolean = false
 )
 
@@ -56,5 +63,8 @@ data class UpdateAddressRequest(
     val state: String? = null,
     val pincode: String? = null,
     val landmark: String? = null,
+    val latitude: BigDecimal? = null,
+    val longitude: BigDecimal? = null,
+    val addressType: String? = null,
     val isDefault: Boolean? = null
 )

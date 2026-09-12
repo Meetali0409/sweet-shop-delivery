@@ -11,6 +11,8 @@ data class Address(
     val state: String = "",
     val pincode: String = "",
     val landmark: String = "",
+    val latitude: Double? = null,
+    val longitude: Double? = null,
     val isDefault: Boolean = false,
     val type: String = "HOME"
 ) {

@@ -128,7 +128,7 @@ class OrderService(
             if (threshold != null && subtotal >= threshold) {
                 BigDecimal.ZERO
             } else {
-                calculateDeliveryCharge(deliveryConfig, address.pincode)
+                calculateDeliveryCharge(deliveryConfig, address)
             }
         } else {
             BigDecimal.ZERO
@@ -407,7 +407,7 @@ class OrderService(
 
     private fun calculateDeliveryCharge(
         deliveryConfig: com.sweetshop.backend.entity.DeliveryConfig,
-        pincode: String
+        address: com.sweetshop.backend.entity.Address
     ): BigDecimal {
         val shopLat = deliveryConfig.shopLatitude
         val shopLon = deliveryConfig.shopLongitude
@@ -418,15 +418,17 @@ class OrderService(
             return deliveryConfig.deliveryCharge
         }
 
-        val pincodeEntry = serviceablePincodeRepository.findByPincodeAndIsActiveTrue(pincode)
-        val pinLat = pincodeEntry?.latitude
-        val pinLon = pincodeEntry?.longitude
+        // Prefer address coordinates (from GPS), fall back to pincode center
+        val destLat = address.latitude
+            ?: serviceablePincodeRepository.findByPincodeAndIsActiveTrue(address.pincode)?.latitude
+        val destLon = address.longitude
+            ?: serviceablePincodeRepository.findByPincodeAndIsActiveTrue(address.pincode)?.longitude
 
-        if (pinLat == null || pinLon == null) {
+        if (destLat == null || destLon == null) {
             return deliveryConfig.deliveryCharge
         }
 
-        val distanceKm = GeoUtils.haversineDistanceKm(shopLat, shopLon, pinLat, pinLon)
+        val distanceKm = GeoUtils.haversineDistanceKm(shopLat, shopLon, destLat, destLon)
         val radiusKm = deliveryConfig.deliveryRadiusKm?.toDouble() ?: 15.0
 
         if (distanceKm > radiusKm) {

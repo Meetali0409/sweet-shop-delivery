@@ -12,6 +12,9 @@ data class CreateAddressRequest(
     @SerializedName("state") val state: String,
     @SerializedName("pincode") val pincode: String,
     @SerializedName("landmark") val landmark: String = "",
+    @SerializedName("latitude") val latitude: Double? = null,
+    @SerializedName("longitude") val longitude: Double? = null,
+    @SerializedName("addressType") val addressType: String = "HOME",
     @SerializedName("isDefault") val isDefault: Boolean = false
 )
 
@@ -25,6 +28,9 @@ data class AddressDto(
     @SerializedName("state") val state: String = "",
     @SerializedName("pincode") val pincode: String = "",
     @SerializedName("landmark") val landmark: String = "",
+    @SerializedName("latitude") val latitude: Double? = null,
+    @SerializedName("longitude") val longitude: Double? = null,
+    @SerializedName("addressType") val addressType: String? = "HOME",
     @SerializedName("isDefault") val isDefault: Boolean = false
 ) {
     fun toDomain(): Address = Address(
@@ -38,8 +44,10 @@ data class AddressDto(
         state = state,
         pincode = pincode,
         landmark = landmark,
+        latitude = latitude,
+        longitude = longitude,
         isDefault = isDefault,
-        type = "HOME"
+        type = addressType ?: "HOME"
     )
 }
 
@@ -52,5 +60,8 @@ fun Address.toCreateRequest(): CreateAddressRequest = CreateAddressRequest(
     state = state,
     pincode = pincode,
     landmark = landmark,
+    latitude = latitude,
+    longitude = longitude,
+    addressType = type,
     isDefault = isDefault
 )

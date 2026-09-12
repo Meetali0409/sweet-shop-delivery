@@ -1,6 +1,7 @@
 package com.sweetshop.backend.entity
 
 import jakarta.persistence.*
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Entity
@@ -38,6 +39,15 @@ class Address(
 
     @Column(name = "landmark")
     var landmark: String? = null,
+
+    @Column(name = "latitude", precision = 10, scale = 7)
+    var latitude: BigDecimal? = null,
+
+    @Column(name = "longitude", precision = 10, scale = 7)
+    var longitude: BigDecimal? = null,
+
+    @Column(name = "address_type")
+    var addressType: String? = "HOME",
 
     @Column(name = "is_default", nullable = false)
     var isDefault: Boolean = false,

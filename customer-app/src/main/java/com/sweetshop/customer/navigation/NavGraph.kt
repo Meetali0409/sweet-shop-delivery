@@ -19,6 +19,7 @@ import com.sweetshop.customer.ui.auth.LoginScreen
 import com.sweetshop.customer.ui.auth.RegisterScreen
 import com.sweetshop.customer.ui.cart.CartScreen
 import com.sweetshop.customer.ui.categories.CategoriesScreen
+import com.sweetshop.customer.ui.checkout.AddAddressScreen
 import com.sweetshop.customer.ui.checkout.AddressSelectionScreen
 import com.sweetshop.customer.ui.checkout.CheckoutScreen
 import com.sweetshop.customer.ui.checkout.OrderConfirmationScreen
@@ -193,7 +194,18 @@ fun SweetShopNavGraph(
                     onNavigateBack = { navController.popBackStack() },
                     onAddressSelected = {
                         navController.navigate(Screen.Checkout.route)
+                    },
+                    onAddAddress = {
+                        navController.navigate(Screen.AddAddress.route)
                     }
+                )
+            }
+
+            // Add Address
+            composable(Screen.AddAddress.route) {
+                AddAddressScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onAddressSaved = { navController.popBackStack() }
                 )
             }
 

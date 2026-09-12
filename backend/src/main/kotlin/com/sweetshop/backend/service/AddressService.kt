@@ -47,6 +47,9 @@ class AddressService(
             state = request.state,
             pincode = request.pincode,
             landmark = request.landmark,
+            latitude = request.latitude,
+            longitude = request.longitude,
+            addressType = request.addressType ?: "HOME",
             isDefault = request.isDefault
         )
 
@@ -72,6 +75,9 @@ class AddressService(
         request.state?.let { address.state = it }
         request.pincode?.let { address.pincode = it }
         request.landmark?.let { address.landmark = it }
+        request.latitude?.let { address.latitude = it }
+        request.longitude?.let { address.longitude = it }
+        request.addressType?.let { address.addressType = it }
         request.isDefault?.let { isDefault ->
             if (isDefault) {
                 val currentDefault = addressRepository.findByUserIdAndIsDefaultTrue(userId)
