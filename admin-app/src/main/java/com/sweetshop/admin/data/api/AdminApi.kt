@@ -27,6 +27,9 @@ interface AdminApi {
     @POST("auth/login")
     suspend fun login(@Body request: LoginRequest): Response<ApiResponse<AuthResponse>>
 
+    @POST("auth/refresh")
+    suspend fun refreshToken(@Body request: RefreshTokenRequest): Response<ApiResponse<AuthResponse>>
+
     // Dashboard
     @GET("admin/dashboard")
     suspend fun getDashboard(): Response<ApiResponse<DashboardDto>>

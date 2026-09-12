@@ -11,6 +11,10 @@ data class AuthResponse(
     val user: UserDto
 )
 
+data class RefreshTokenRequest(
+    val refreshToken: String
+)
+
 data class UserDto(
     val id: Long,
     val name: String,

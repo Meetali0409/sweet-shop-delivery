@@ -3,6 +3,7 @@ package com.sweetshop.admin.di
 import com.sweetshop.admin.BuildConfig
 import com.sweetshop.admin.data.api.AdminApi
 import com.sweetshop.admin.data.api.AuthInterceptor
+import com.sweetshop.admin.data.api.TokenRefreshInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,10 +35,12 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(
         authInterceptor: AuthInterceptor,
+        tokenRefreshInterceptor: TokenRefreshInterceptor,
         loggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
+            .addInterceptor(tokenRefreshInterceptor)
             .addInterceptor(loggingInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)

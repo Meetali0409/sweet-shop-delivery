@@ -1,6 +1,7 @@
 package com.sweetshop.admin
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,7 +17,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
+import com.sweetshop.admin.data.api.AuthEvent
+import com.sweetshop.admin.data.api.AuthEventManager
 import com.sweetshop.admin.data.api.TokenManager
 import com.sweetshop.admin.navigation.NavGraph
 import com.sweetshop.admin.navigation.Screen
@@ -30,6 +35,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var tokenManager: TokenManager
+
+    @Inject
+    lateinit var authEventManager: AuthEventManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,6 +95,20 @@ class MainActivity : ComponentActivity() {
                             scope.launch { drawerState.open() }
                         }
                     )
+                }
+
+                val context = LocalContext.current
+                LaunchedEffect(Unit) {
+                    authEventManager.authEvents.collect { event ->
+                        when (event) {
+                            is AuthEvent.SessionExpired -> {
+                                Toast.makeText(context, "Session expired. Please login again.", Toast.LENGTH_LONG).show()
+                                navController.navigate(Screen.Login.route) {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 navController.addOnDestinationChangedListener { _, destination, _ ->
