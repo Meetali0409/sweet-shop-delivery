@@ -6,7 +6,7 @@ data class CategoryDto(
     val id: Long,
     val name: String,
     val description: String?,
-    val image: String?,
+    val imageUrl: String?,
     val isActive: Boolean,
     val sortOrder: Int,
     val productCount: Long = 0

@@ -31,6 +31,7 @@ class CartService(
             ?: return CartDto(
                 items = emptyList(),
                 subtotal = java.math.BigDecimal.ZERO,
+                total = java.math.BigDecimal.ZERO,
                 itemCount = 0
             )
         return cart.toDto()

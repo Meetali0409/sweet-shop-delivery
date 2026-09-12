@@ -26,6 +26,7 @@ data class ProductDetailUiState(
     val error: String? = null,
     val isInWishlist: Boolean = false,
     val addedToCart: Boolean = false,
+    val navigateToCart: Boolean = false,
     val message: String? = null
 )
 
@@ -123,6 +124,26 @@ class ProductDetailViewModel @Inject constructor(
                 is Resource.Loading -> {}
             }
         }
+    }
+
+    fun buyNow() {
+        viewModelScope.launch {
+            val state = _uiState.value
+            val selectedWeight = state.selectedVariant?.weight
+            when (val result = cartRepository.addToCart(productId, selectedWeight, state.quantity)) {
+                is Resource.Success -> {
+                    _uiState.update { it.copy(addedToCart = true, navigateToCart = true) }
+                }
+                is Resource.Error -> {
+                    _uiState.update { it.copy(message = result.message) }
+                }
+                is Resource.Loading -> {}
+            }
+        }
+    }
+
+    fun clearNavigateToCart() {
+        _uiState.update { it.copy(navigateToCart = false, addedToCart = false) }
     }
 
     fun toggleWishlist() {

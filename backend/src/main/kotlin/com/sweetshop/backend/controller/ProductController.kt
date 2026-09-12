@@ -27,8 +27,14 @@ class ProductController(
         @RequestParam(required = false) search: String?,
         @RequestParam(defaultValue = "createdAt") sort: String?
     ): ResponseEntity<ApiResponse<PagedResponse<ProductListDto>>> {
-        val sortDirection = Sort.by(Sort.Direction.DESC, sort ?: "createdAt")
-        val pageable = PageRequest.of(page, size, sortDirection)
+        val sortValue = sort ?: "createdAt"
+        val parts = sortValue.split(",")
+        val property = parts[0].trim()
+        val direction = if (parts.size > 1 && parts[1].trim().equals("asc", ignoreCase = true))
+            Sort.Direction.ASC else Sort.Direction.DESC
+        val allowedFields = setOf("createdAt", "price", "rating", "name", "totalReviews")
+        val safeProperty = if (property in allowedFields) property else "createdAt"
+        val pageable = PageRequest.of(page, size, Sort.by(direction, safeProperty))
         val response = productService.getProducts(category, search, sort, pageable)
         return ResponseEntity.ok(ApiResponse(success = true, data = response))
     }

@@ -35,10 +35,15 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,10 +63,14 @@ import com.sweetshop.customer.ui.theme.SweetPinkContainer
 @Composable
 fun ProfileScreen(
     onNavigateToOrders: () -> Unit,
+    onNavigateToAddresses: () -> Unit,
+    onNavigateToWishlist: () -> Unit,
     onNavigateToLogin: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(state.isLoggedOut) {
         if (state.isLoggedOut) {
@@ -72,7 +81,8 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             SweetShopTopBar(title = "Profile")
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         if (state.isLoading) {
             LoadingState()
@@ -156,21 +166,21 @@ fun ProfileScreen(
                             icon = Icons.Default.LocationOn,
                             title = "Addresses",
                             subtitle = "Manage delivery addresses",
-                            onClick = { /* TODO */ }
+                            onClick = onNavigateToAddresses
                         )
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                         ProfileMenuItem(
                             icon = Icons.Default.Favorite,
                             title = "Wishlist",
                             subtitle = "Your favourite items",
-                            onClick = { /* TODO */ }
+                            onClick = onNavigateToWishlist
                         )
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                         ProfileMenuItem(
                             icon = Icons.Default.Notifications,
                             title = "Notifications",
                             subtitle = "View all notifications",
-                            onClick = { /* TODO */ }
+                            onClick = { scope.launch { snackbarHostState.showSnackbar("Coming soon") } }
                         )
                     }
                 }
@@ -191,21 +201,21 @@ fun ProfileScreen(
                             icon = Icons.AutoMirrored.Filled.HelpOutline,
                             title = "Help & Support",
                             subtitle = "Get help with your orders",
-                            onClick = { /* TODO */ }
+                            onClick = { scope.launch { snackbarHostState.showSnackbar("Coming soon") } }
                         )
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                         ProfileMenuItem(
                             icon = Icons.Default.GppGood,
                             title = "Terms & Conditions",
                             subtitle = "Read our terms",
-                            onClick = { /* TODO */ }
+                            onClick = { scope.launch { snackbarHostState.showSnackbar("Coming soon") } }
                         )
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                         ProfileMenuItem(
                             icon = Icons.Default.Policy,
                             title = "Privacy Policy",
                             subtitle = "Read our privacy policy",
-                            onClick = { /* TODO */ }
+                            onClick = { scope.launch { snackbarHostState.showSnackbar("Coming soon") } }
                         )
                     }
                 }

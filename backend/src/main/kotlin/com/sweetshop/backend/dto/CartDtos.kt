@@ -7,6 +7,12 @@ import java.math.BigDecimal
 data class CartDto(
     val items: List<CartItemDto>,
     val subtotal: BigDecimal,
+    val discount: BigDecimal = BigDecimal.ZERO,
+    val deliveryFee: BigDecimal = BigDecimal.ZERO,
+    val tax: BigDecimal = BigDecimal.ZERO,
+    val total: BigDecimal,
+    val couponCode: String? = null,
+    val couponDiscount: BigDecimal = BigDecimal.ZERO,
     val itemCount: Int
 )
 

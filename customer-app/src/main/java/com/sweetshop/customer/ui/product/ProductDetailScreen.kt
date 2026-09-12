@@ -89,6 +89,13 @@ fun ProductDetailScreen(
         }
     }
 
+    LaunchedEffect(state.addedToCart) {
+        if (state.addedToCart && state.navigateToCart) {
+            viewModel.clearNavigateToCart()
+            onNavigateToCart()
+        }
+    }
+
     Scaffold(
         topBar = {
             SweetShopTopBar(
@@ -128,8 +135,7 @@ fun ProductDetailScreen(
                     }
                     Button(
                         onClick = {
-                            viewModel.addToCart()
-                            onNavigateToCart()
+                            viewModel.buyNow()
                         },
                         modifier = Modifier
                             .weight(1f)

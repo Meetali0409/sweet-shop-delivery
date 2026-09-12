@@ -12,6 +12,7 @@ fun Cart.toDto(): CartDto {
     return CartDto(
         items = cartItems,
         subtotal = subtotal,
+        total = subtotal,
         itemCount = cartItems.sumOf { it.quantity }
     )
 }

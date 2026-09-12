@@ -31,6 +31,7 @@ import com.sweetshop.customer.ui.product.ProductDetailScreen
 import com.sweetshop.customer.ui.product.ProductListScreen
 import com.sweetshop.customer.ui.profile.ProfileScreen
 import com.sweetshop.customer.ui.splash.SplashScreen
+import com.sweetshop.customer.ui.wishlist.WishlistScreen
 
 @Composable
 fun SweetShopNavGraph(
@@ -282,10 +283,26 @@ fun SweetShopNavGraph(
                     onNavigateToOrders = {
                         navController.navigate("orders_from_profile")
                     },
+                    onNavigateToAddresses = {
+                        navController.navigate(Screen.AddressSelection.route)
+                    },
+                    onNavigateToWishlist = {
+                        navController.navigate(Screen.Wishlist.route)
+                    },
                     onNavigateToLogin = {
                         navController.navigate(Screen.Login.route) {
                             popUpTo(0) { inclusive = true }
                         }
+                    }
+                )
+            }
+
+            // Wishlist
+            composable(Screen.Wishlist.route) {
+                WishlistScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToProductDetail = { productId ->
+                        navController.navigate(Screen.ProductDetail.createRoute(productId))
                     }
                 )
             }

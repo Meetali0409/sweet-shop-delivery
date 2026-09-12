@@ -26,6 +26,7 @@ sealed class Screen(val route: String) {
         fun createRoute(orderId: Long) = "order_tracking/$orderId"
     }
     data object Profile : Screen("profile")
+    data object Wishlist : Screen("wishlist")
 }
 
 // Bottom navigation items
