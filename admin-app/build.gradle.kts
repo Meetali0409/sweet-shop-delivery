@@ -36,7 +36,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080/api/v1/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://creative-dream-production-b15f.up.railway.app/api/v1/\"")
         }
         release {
             isMinifyEnabled = true
