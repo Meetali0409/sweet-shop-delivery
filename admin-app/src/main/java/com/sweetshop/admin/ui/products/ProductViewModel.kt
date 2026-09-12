@@ -1,7 +1,10 @@
 package com.sweetshop.admin.ui.products
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sweetshop.admin.data.api.AdminApi
 import com.sweetshop.admin.data.dto.CategoryDto
 import com.sweetshop.admin.data.dto.CreateProductRequest
 import com.sweetshop.admin.data.dto.ProductDto
@@ -11,11 +14,15 @@ import com.sweetshop.admin.domain.repository.CategoryRepository
 import com.sweetshop.admin.domain.repository.ProductRepository
 import com.sweetshop.admin.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import javax.inject.Inject
 
 data class ProductListState(
@@ -37,6 +44,9 @@ data class ProductFormState(
     val name: String = "",
     val description: String = "",
     val categoryId: Long = 0,
+    val imageUrl: String = "",
+    val selectedImageUri: Uri? = null,
+    val isUploadingImage: Boolean = false,
     val price: String = "",
     val discountPrice: String = "",
     val unit: String = "500g",
@@ -55,7 +65,9 @@ data class ProductFormState(
 @HiltViewModel
 class ProductViewModel @Inject constructor(
     private val productRepository: ProductRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val adminApi: AdminApi,
+    @ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
     private val _listState = MutableStateFlow(ProductListState())
@@ -151,6 +163,7 @@ class ProductViewModel @Inject constructor(
                             name = p.name,
                             description = p.description ?: "",
                             categoryId = p.categoryId,
+                            imageUrl = p.imageUrl ?: "",
                             price = p.price.toString(),
                             discountPrice = p.discountPrice?.toString() ?: "",
                             unit = p.unit,
@@ -178,6 +191,7 @@ class ProductViewModel @Inject constructor(
                 "name" -> state.copy(name = value as String)
                 "description" -> state.copy(description = value as String)
                 "categoryId" -> state.copy(categoryId = value as Long)
+                "imageUrl" -> state.copy(imageUrl = value as String)
                 "price" -> state.copy(price = value as String)
                 "discountPrice" -> state.copy(discountPrice = value as String)
                 "unit" -> state.copy(unit = value as String)
@@ -189,6 +203,43 @@ class ProductViewModel @Inject constructor(
                 "ingredients" -> state.copy(ingredients = value as String)
                 "allergenInfo" -> state.copy(allergenInfo = value as String)
                 else -> state
+            }
+        }
+    }
+
+    fun onImageSelected(uri: Uri) {
+        _formState.update { it.copy(selectedImageUri = uri) }
+        uploadImage(uri)
+    }
+
+    private fun uploadImage(uri: Uri) {
+        viewModelScope.launch {
+            _formState.update { it.copy(isUploadingImage = true) }
+            try {
+                val inputStream = appContext.contentResolver.openInputStream(uri)
+                val bytes = inputStream?.readBytes() ?: return@launch
+                inputStream.close()
+
+                val mimeType = appContext.contentResolver.getType(uri) ?: "image/jpeg"
+                val extension = when {
+                    mimeType.contains("png") -> "png"
+                    mimeType.contains("webp") -> "webp"
+                    else -> "jpg"
+                }
+                val requestBody = bytes.toRequestBody(mimeType.toMediaTypeOrNull())
+                val filePart = MultipartBody.Part.createFormData(
+                    "file", "product_image.$extension", requestBody
+                )
+
+                val response = adminApi.uploadFile(filePart)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val fileUrl = response.body()!!.data!!["fileUrl"] ?: ""
+                    _formState.update { it.copy(isUploadingImage = false, imageUrl = fileUrl) }
+                } else {
+                    _formState.update { it.copy(isUploadingImage = false, error = "Failed to upload image") }
+                }
+            } catch (e: Exception) {
+                _formState.update { it.copy(isUploadingImage = false, error = "Image upload failed: ${e.message}") }
             }
         }
     }
@@ -218,6 +269,7 @@ class ProductViewModel @Inject constructor(
                         name = state.name,
                         description = state.description.ifBlank { null },
                         categoryId = state.categoryId,
+                        imageUrl = state.imageUrl.ifBlank { null },
                         price = state.price.toDoubleOrNull(),
                         discountPrice = state.discountPrice.toDoubleOrNull(),
                         unit = state.unit,
@@ -236,6 +288,7 @@ class ProductViewModel @Inject constructor(
                         name = state.name,
                         description = state.description.ifBlank { null },
                         categoryId = state.categoryId,
+                        imageUrl = state.imageUrl.ifBlank { null },
                         price = state.price.toDouble(),
                         discountPrice = state.discountPrice.toDoubleOrNull(),
                         unit = state.unit,

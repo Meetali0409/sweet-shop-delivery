@@ -16,9 +16,9 @@ class AdminInventoryController(
 
     @GetMapping
     fun getInventory(
-        @RequestParam(defaultValue = "10") threshold: Int
+        @RequestParam(defaultValue = "10") lowStockThreshold: Int
     ): ResponseEntity<ApiResponse<List<InventoryItemDto>>> {
-        val items = productService.getLowStockProducts(threshold)
+        val items = productService.getAllInventory(lowStockThreshold)
         return ResponseEntity.ok(ApiResponse(success = true, data = items))
     }
 

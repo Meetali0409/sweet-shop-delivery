@@ -1,13 +1,16 @@
 package com.sweetshop.admin.data.api
 
 import com.sweetshop.admin.data.dto.*
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -133,6 +136,11 @@ interface AdminApi {
         @Path("productId") productId: Long,
         @Body request: UpdateStockRequest
     ): Response<ApiResponse<ProductDto>>
+
+    // File Upload
+    @Multipart
+    @POST("files/upload")
+    suspend fun uploadFile(@Part file: MultipartBody.Part): Response<ApiResponse<Map<String, String>>>
 
     // Reports
     @GET("admin/reports/sales")

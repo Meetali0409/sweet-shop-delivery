@@ -184,4 +184,20 @@ class ProductService(
             )
         }
     }
+
+    fun getAllInventory(lowStockThreshold: Int): List<InventoryItemDto> {
+        val products = productRepository.findAll()
+        return products.map { product ->
+            InventoryItemDto(
+                productId = product.id,
+                productName = product.name,
+                currentStock = product.stockQuantity,
+                status = when {
+                    product.stockQuantity <= 0 -> StockStatus.OUT_OF_STOCK
+                    product.stockQuantity < lowStockThreshold -> StockStatus.LOW_STOCK
+                    else -> StockStatus.IN_STOCK
+                }
+            )
+        }
+    }
 }

@@ -17,7 +17,13 @@ data class ShopConfigDto(
     val aboutText: String? = null,
     val paymentMethods: List<String> = listOf("COD"),
     val deliveryCharge: Double? = null,
-    val freeDeliveryThreshold: Double? = null
+    val freeDeliveryThreshold: Double? = null,
+    val shopLatitude: Double? = null,
+    val shopLongitude: Double? = null,
+    val deliveryRadiusKm: Double? = null,
+    val perKmCharge: Double? = null,
+    val baseDeliveryDistanceKm: Double? = null,
+    val estimatedDeliveryDays: Int? = null
 )
 
 data class UpdateShopConfigRequest(
@@ -35,5 +41,13 @@ data class UpdateShopConfigRequest(
     val termsUrl: String? = null,
     val privacyUrl: String? = null,
     val aboutText: String? = null,
-    val paymentMethods: List<String>? = null
+    val paymentMethods: List<String>? = null,
+    val deliveryCharge: Double? = null,
+    val freeDeliveryThreshold: Double? = null,
+    val shopLatitude: Double? = null,
+    val shopLongitude: Double? = null,
+    val deliveryRadiusKm: Double? = null,
+    val perKmCharge: Double? = null,
+    val baseDeliveryDistanceKm: Double? = null,
+    val estimatedDeliveryDays: Int? = null
 )

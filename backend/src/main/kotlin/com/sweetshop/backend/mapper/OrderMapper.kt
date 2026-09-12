@@ -37,7 +37,9 @@ fun Order.toListDto(): OrderListDto = OrderListDto(
     orderStatus = this.orderStatus,
     paymentStatus = this.paymentStatus,
     itemCount = this.items.size,
-    createdAt = this.createdAt
+    createdAt = this.createdAt,
+    customerName = this.user.name,
+    customerPhone = this.user.phone
 )
 
 fun OrderItem.toDto(): OrderItemDto = OrderItemDto(

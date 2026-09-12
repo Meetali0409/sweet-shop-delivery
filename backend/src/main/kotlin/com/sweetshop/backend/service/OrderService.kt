@@ -12,6 +12,7 @@ import com.sweetshop.backend.exception.ResourceNotFoundException
 import com.sweetshop.backend.mapper.toDto
 import com.sweetshop.backend.mapper.toListDto
 import com.sweetshop.backend.repository.*
+import com.sweetshop.backend.util.GeoUtils
 import com.sweetshop.backend.util.OrderNumberGenerator
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Pageable
@@ -127,7 +128,7 @@ class OrderService(
             if (threshold != null && subtotal >= threshold) {
                 BigDecimal.ZERO
             } else {
-                deliveryConfig.deliveryCharge
+                calculateDeliveryCharge(deliveryConfig, address.pincode)
             }
         } else {
             BigDecimal.ZERO
@@ -402,5 +403,43 @@ class OrderService(
         logger.info("Order status updated: orderNumber={}, newStatus={}", order.orderNumber, request.status)
         val address = addressRepository.findById(order.addressId).orElse(null)
         return savedOrder.toDto(address)
+    }
+
+    private fun calculateDeliveryCharge(
+        deliveryConfig: com.sweetshop.backend.entity.DeliveryConfig,
+        pincode: String
+    ): BigDecimal {
+        val shopLat = deliveryConfig.shopLatitude
+        val shopLon = deliveryConfig.shopLongitude
+        val perKm = deliveryConfig.perKmCharge
+        val baseDist = deliveryConfig.baseDeliveryDistanceKm
+
+        if (shopLat == null || shopLon == null || perKm == null || baseDist == null) {
+            return deliveryConfig.deliveryCharge
+        }
+
+        val pincodeEntry = serviceablePincodeRepository.findByPincodeAndIsActiveTrue(pincode)
+        val pinLat = pincodeEntry?.latitude
+        val pinLon = pincodeEntry?.longitude
+
+        if (pinLat == null || pinLon == null) {
+            return deliveryConfig.deliveryCharge
+        }
+
+        val distanceKm = GeoUtils.haversineDistanceKm(shopLat, shopLon, pinLat, pinLon)
+        val radiusKm = deliveryConfig.deliveryRadiusKm?.toDouble() ?: 15.0
+
+        if (distanceKm > radiusKm) {
+            return deliveryConfig.deliveryCharge
+        }
+
+        val baseDistKm = baseDist.toDouble()
+        if (distanceKm <= baseDistKm) {
+            return deliveryConfig.deliveryCharge
+        }
+
+        val extraKm = distanceKm - baseDistKm
+        val extraCharge = BigDecimal(extraKm).multiply(perKm).setScale(2, RoundingMode.HALF_UP)
+        return deliveryConfig.deliveryCharge.add(extraCharge)
     }
 }

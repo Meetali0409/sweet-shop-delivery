@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -36,4 +37,5 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     }
     data object Inventory : Screen("inventory", "Inventory", Icons.Default.Inventory)
     data object Reports : Screen("reports", "Reports", Icons.Default.BarChart)
+    data object Settings : Screen("settings", "Settings", Icons.Default.Settings)
 }

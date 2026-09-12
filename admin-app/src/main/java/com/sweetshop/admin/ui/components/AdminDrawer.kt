@@ -53,7 +53,8 @@ fun AdminDrawer(
         Screen.Customers,
         Screen.Coupons,
         Screen.Inventory,
-        Screen.Reports
+        Screen.Reports,
+        Screen.Settings
     )
 
     ModalDrawerSheet(

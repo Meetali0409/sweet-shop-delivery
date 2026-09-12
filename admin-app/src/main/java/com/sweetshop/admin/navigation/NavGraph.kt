@@ -18,6 +18,7 @@ import com.sweetshop.admin.ui.orders.OrderListScreen
 import com.sweetshop.admin.ui.products.AddEditProductScreen
 import com.sweetshop.admin.ui.products.ProductListScreen
 import com.sweetshop.admin.ui.reports.ReportsScreen
+import com.sweetshop.admin.ui.settings.SettingsScreen
 
 @Composable
 fun NavGraph(
@@ -145,6 +146,10 @@ fun NavGraph(
 
         composable(Screen.Reports.route) {
             ReportsScreen(onOpenDrawer = onOpenDrawer)
+        }
+
+        composable(Screen.Settings.route) {
+            SettingsScreen(onOpenDrawer = onOpenDrawer)
         }
     }
 }

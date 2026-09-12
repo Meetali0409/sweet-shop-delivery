@@ -21,6 +21,21 @@ class DeliveryConfig(
     @Column(name = "estimated_delivery_days", nullable = false)
     var estimatedDeliveryDays: Int = 3,
 
+    @Column(name = "shop_latitude", precision = 10, scale = 7)
+    var shopLatitude: BigDecimal? = null,
+
+    @Column(name = "shop_longitude", precision = 10, scale = 7)
+    var shopLongitude: BigDecimal? = null,
+
+    @Column(name = "delivery_radius_km", precision = 10, scale = 2)
+    var deliveryRadiusKm: BigDecimal? = BigDecimal("15.00"),
+
+    @Column(name = "per_km_charge", precision = 10, scale = 2)
+    var perKmCharge: BigDecimal? = BigDecimal("5.00"),
+
+    @Column(name = "base_delivery_distance_km", precision = 10, scale = 2)
+    var baseDeliveryDistanceKm: BigDecimal? = BigDecimal("3.00"),
+
     @Column(name = "updated_at")
     var updatedAt: LocalDateTime = LocalDateTime.now()
 ) {

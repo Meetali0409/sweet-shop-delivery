@@ -37,7 +37,9 @@ data class OrderListDto(
     val orderStatus: OrderStatus,
     val paymentStatus: PaymentStatus,
     val itemCount: Int,
-    val createdAt: LocalDateTime
+    val createdAt: LocalDateTime,
+    val customerName: String? = null,
+    val customerPhone: String? = null
 )
 
 data class OrderItemDto(

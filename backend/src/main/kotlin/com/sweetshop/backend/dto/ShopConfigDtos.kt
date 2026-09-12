@@ -21,7 +21,13 @@ data class ShopConfigDto(
     val aboutText: String?,
     val paymentMethods: List<String>,
     val deliveryCharge: BigDecimal?,
-    val freeDeliveryThreshold: BigDecimal?
+    val freeDeliveryThreshold: BigDecimal?,
+    val shopLatitude: BigDecimal?,
+    val shopLongitude: BigDecimal?,
+    val deliveryRadiusKm: BigDecimal?,
+    val perKmCharge: BigDecimal?,
+    val baseDeliveryDistanceKm: BigDecimal?,
+    val estimatedDeliveryDays: Int?
 )
 
 data class UpdateShopConfigRequest(
@@ -56,5 +62,13 @@ data class UpdateShopConfigRequest(
     val termsUrl: String?,
     val privacyUrl: String?,
     val aboutText: String?,
-    val paymentMethods: List<String>?
+    val paymentMethods: List<String>?,
+    val deliveryCharge: BigDecimal?,
+    val freeDeliveryThreshold: BigDecimal?,
+    val shopLatitude: BigDecimal?,
+    val shopLongitude: BigDecimal?,
+    val deliveryRadiusKm: BigDecimal?,
+    val perKmCharge: BigDecimal?,
+    val baseDeliveryDistanceKm: BigDecimal?,
+    val estimatedDeliveryDays: Int?
 )

@@ -6,7 +6,9 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -23,10 +25,12 @@ class AdminReportController(
 
     @GetMapping("/reports/sales")
     fun getSalesReport(
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) from: LocalDateTime,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) to: LocalDateTime
+        @RequestParam from: String,
+        @RequestParam to: String
     ): ResponseEntity<ApiResponse<SalesReportDto>> {
-        val report = reportService.getSalesReport(from, to)
+        val fromDate = LocalDate.parse(from).atStartOfDay()
+        val toDate = LocalDate.parse(to).atTime(LocalTime.MAX)
+        val report = reportService.getSalesReport(fromDate, toDate)
         return ResponseEntity.ok(ApiResponse(success = true, data = report))
     }
 

@@ -44,7 +44,13 @@ class ShopConfigService(
             aboutText = config.aboutText,
             paymentMethods = config.paymentMethods.split(",").map { it.trim() },
             deliveryCharge = deliveryConfig?.deliveryCharge,
-            freeDeliveryThreshold = deliveryConfig?.freeDeliveryThreshold
+            freeDeliveryThreshold = deliveryConfig?.freeDeliveryThreshold,
+            shopLatitude = deliveryConfig?.shopLatitude,
+            shopLongitude = deliveryConfig?.shopLongitude,
+            deliveryRadiusKm = deliveryConfig?.deliveryRadiusKm,
+            perKmCharge = deliveryConfig?.perKmCharge,
+            baseDeliveryDistanceKm = deliveryConfig?.baseDeliveryDistanceKm,
+            estimatedDeliveryDays = deliveryConfig?.estimatedDeliveryDays
         )
     }
 
@@ -72,6 +78,21 @@ class ShopConfigService(
         config.updatedAt = LocalDateTime.now()
 
         shopConfigRepository.save(config)
+
+        // Update delivery config
+        val deliveryConfig = deliveryConfigRepository.findAll().firstOrNull()
+        if (deliveryConfig != null) {
+            request.deliveryCharge?.let { deliveryConfig.deliveryCharge = it }
+            request.freeDeliveryThreshold?.let { deliveryConfig.freeDeliveryThreshold = it }
+            request.shopLatitude?.let { deliveryConfig.shopLatitude = it }
+            request.shopLongitude?.let { deliveryConfig.shopLongitude = it }
+            request.deliveryRadiusKm?.let { deliveryConfig.deliveryRadiusKm = it }
+            request.perKmCharge?.let { deliveryConfig.perKmCharge = it }
+            request.baseDeliveryDistanceKm?.let { deliveryConfig.baseDeliveryDistanceKm = it }
+            request.estimatedDeliveryDays?.let { deliveryConfig.estimatedDeliveryDays = it }
+            deliveryConfigRepository.save(deliveryConfig)
+        }
+
         logger.info("Shop configuration updated: {}", config.shopName)
 
         return getConfig()

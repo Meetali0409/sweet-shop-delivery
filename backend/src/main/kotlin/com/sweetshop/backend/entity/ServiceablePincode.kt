@@ -1,6 +1,7 @@
 package com.sweetshop.backend.entity
 
 import jakarta.persistence.*
+import java.math.BigDecimal
 
 @Entity
 @Table(name = "serviceable_pincodes")
@@ -17,7 +18,13 @@ class ServiceablePincode(
     var city: String? = null,
 
     @Column(name = "is_active", nullable = false)
-    var isActive: Boolean = true
+    var isActive: Boolean = true,
+
+    @Column(name = "latitude", precision = 10, scale = 7)
+    var latitude: BigDecimal? = null,
+
+    @Column(name = "longitude", precision = 10, scale = 7)
+    var longitude: BigDecimal? = null
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

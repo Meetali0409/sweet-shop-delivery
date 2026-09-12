@@ -48,7 +48,7 @@ class ReportService(
     fun getDashboard(): DashboardDto {
         val totalOrders = orderRepository.count()
         val totalRevenue = orderRepository.sumTotalAmountByCreatedAtBetween(
-            LocalDateTime.MIN,
+            LocalDateTime.of(2000, 1, 1, 0, 0),
             LocalDateTime.now()
         )
         val totalCustomers = userRepository.count()
