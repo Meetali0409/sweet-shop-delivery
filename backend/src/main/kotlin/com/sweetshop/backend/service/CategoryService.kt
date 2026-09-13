@@ -30,6 +30,13 @@ class CategoryService(
         }
     }
 
+    fun getAllCategories(): List<CategoryDto> {
+        return categoryRepository.findAll().sortedBy { it.sortOrder }.map { category ->
+            val productCount = productRepository.countByCategoryId(category.id)
+            category.toDto(productCount)
+        }
+    }
+
     fun getCategoryById(id: Long): CategoryDto {
         val category = categoryRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Category not found with id: $id") }

@@ -142,6 +142,14 @@ class CategoryViewModel @Inject constructor(
     }
 
     fun toggleCategoryStatus(category: CategoryDto) {
+        // Optimistic update
+        val newStatus = !category.isActive
+        _state.update { state ->
+            state.copy(categories = state.categories.map {
+                if (it.id == category.id) it.copy(isActive = newStatus) else it
+            })
+        }
+
         viewModelScope.launch {
             val result = categoryRepository.updateCategory(
                 category.id,
@@ -149,13 +157,20 @@ class CategoryViewModel @Inject constructor(
                     name = null,
                     description = null,
                     image = null,
-                    isActive = !category.isActive,
+                    isActive = newStatus,
                     sortOrder = null
                 )
             )
             when (result) {
                 is Resource.Success -> loadCategories()
-                is Resource.Error -> {}
+                is Resource.Error -> {
+                    // Revert on failure
+                    _state.update { state ->
+                        state.copy(categories = state.categories.map {
+                            if (it.id == category.id) it.copy(isActive = category.isActive) else it
+                        })
+                    }
+                }
                 is Resource.Loading -> {}
             }
         }

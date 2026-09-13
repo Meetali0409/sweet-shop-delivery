@@ -68,7 +68,7 @@ interface AdminApi {
     ): Response<ApiResponse<ProductDto>>
 
     // Categories
-    @GET("categories")
+    @GET("admin/categories")
     suspend fun getCategories(): Response<ApiResponse<List<CategoryDto>>>
 
     @POST("admin/categories")

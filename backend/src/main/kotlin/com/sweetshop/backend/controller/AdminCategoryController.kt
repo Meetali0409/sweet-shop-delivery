@@ -15,6 +15,12 @@ class AdminCategoryController(
     private val categoryService: CategoryService
 ) {
 
+    @GetMapping
+    fun getAllCategories(): ResponseEntity<ApiResponse<List<CategoryDto>>> {
+        val categories = categoryService.getAllCategories()
+        return ResponseEntity.ok(ApiResponse(success = true, data = categories))
+    }
+
     @PostMapping
     fun createCategory(
         @Valid @RequestBody request: CreateCategoryRequest
