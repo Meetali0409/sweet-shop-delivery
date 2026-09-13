@@ -75,17 +75,12 @@ class JwtTokenProvider(
 
     fun validateToken(token: String): Boolean {
         try {
-            val claims = Jwts.parser()
+            Jwts.parser()
                 .verifyWith(getSigningKey())
                 .requireIssuer(issuer)
                 .requireAudience(audience)
                 .build()
                 .parseSignedClaims(token)
-                .payload
-
-            if (claims["type"] == "refresh") {
-                return false
-            }
             return true
         } catch (ex: SecurityException) {
             logger.error("Invalid JWT signature: {}", ex.message)
@@ -99,6 +94,15 @@ class JwtTokenProvider(
             logger.error("JWT claims string is empty: {}", ex.message)
         }
         return false
+    }
+
+    fun isRefreshToken(token: String): Boolean {
+        return try {
+            val claims = getClaims(token)
+            claims["type"] == "refresh"
+        } catch (ex: Exception) {
+            false
+        }
     }
 
     fun getRefreshTokenExpirationMs(): Long = refreshTokenExpirationMs
