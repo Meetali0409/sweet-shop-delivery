@@ -7,7 +7,7 @@ data class ApiResponse<T>(
     @SerializedName("message") val message: String = "",
     @SerializedName("data") val data: T? = null,
     @SerializedName("error") val error: String? = null,
-    @SerializedName("errorCode") val errorCode: String? = null
+    @SerializedName("code") val errorCode: String? = null
 )
 
 data class PagedResponse<T>(

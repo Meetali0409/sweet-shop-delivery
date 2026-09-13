@@ -13,7 +13,7 @@ data class OrderDto(
     val deliveryCharge: Double,
     val tax: Double,
     val totalAmount: Double,
-    val paymentMethod: String,
+    val paymentMethod: String?,
     val paymentStatus: String,
     val orderStatus: String,
     val couponCode: String?,
@@ -41,7 +41,7 @@ data class OrderItemDto(
     val productName: String,
     val productImage: String?,
     val quantity: Int,
-    val selectedWeight: String,
+    val selectedWeight: String?,
     val unitPrice: Double,
     val totalPrice: Double
 )

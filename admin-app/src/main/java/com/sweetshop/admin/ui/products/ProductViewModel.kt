@@ -138,13 +138,15 @@ class ProductViewModel @Inject constructor(
 
     fun deleteProduct(productId: Long) {
         viewModelScope.launch {
-            when (productRepository.deleteProduct(productId)) {
+            when (val result = productRepository.deleteProduct(productId)) {
                 is Resource.Success -> {
                     _listState.update { state ->
                         state.copy(products = state.products.filter { it.id != productId })
                     }
                 }
-                is Resource.Error -> {}
+                is Resource.Error -> {
+                    _listState.update { it.copy(error = result.message) }
+                }
                 is Resource.Loading -> {}
             }
         }
@@ -166,7 +168,7 @@ class ProductViewModel @Inject constructor(
                             imageUrl = p.imageUrl ?: "",
                             price = p.price.toString(),
                             discountPrice = p.discountPrice?.toString() ?: "",
-                            unit = p.unit,
+                            unit = p.unit ?: "",
                             stockQuantity = p.stockQuantity.toString(),
                             minimumOrderQuantity = p.minimumOrderQuantity.toString(),
                             isAvailable = p.isAvailable,

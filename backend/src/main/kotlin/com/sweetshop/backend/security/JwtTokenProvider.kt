@@ -75,12 +75,17 @@ class JwtTokenProvider(
 
     fun validateToken(token: String): Boolean {
         try {
-            Jwts.parser()
+            val claims = Jwts.parser()
                 .verifyWith(getSigningKey())
                 .requireIssuer(issuer)
                 .requireAudience(audience)
                 .build()
                 .parseSignedClaims(token)
+                .payload
+
+            if (claims["type"] == "refresh") {
+                return false
+            }
             return true
         } catch (ex: SecurityException) {
             logger.error("Invalid JWT signature: {}", ex.message)

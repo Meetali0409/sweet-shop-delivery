@@ -109,6 +109,11 @@ class SettingsViewModel @Inject constructor(
     fun saveSettings() {
         val current = _state.value
 
+        if (current.shopName.isBlank()) {
+            _state.update { it.copy(error = "Shop name is required") }
+            return
+        }
+
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true, error = null, successMessage = null) }
             try {

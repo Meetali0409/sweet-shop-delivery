@@ -165,7 +165,7 @@ fun OrderDetailScreen(
                                     style = MaterialTheme.typography.bodySmall,
                                     color = Color.Gray
                                 )
-                                if (order.paymentMethod.isNotBlank()) {
+                                if (!order.paymentMethod.isNullOrBlank()) {
                                     Text(
                                         text = "Payment: ${order.paymentMethod}",
                                         style = MaterialTheme.typography.bodySmall,

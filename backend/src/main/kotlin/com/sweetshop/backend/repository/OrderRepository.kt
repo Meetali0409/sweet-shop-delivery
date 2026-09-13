@@ -30,6 +30,12 @@ interface OrderRepository : JpaRepository<Order, Long> {
     @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.createdAt BETWEEN :from AND :to")
     fun sumTotalAmountByCreatedAtBetween(@Param("from") from: LocalDateTime, @Param("to") to: LocalDateTime): BigDecimal
 
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.createdAt BETWEEN :from AND :to AND o.orderStatus <> :status")
+    fun countByCreatedAtBetweenAndOrderStatusNot(@Param("from") from: LocalDateTime, @Param("to") to: LocalDateTime, @Param("status") status: OrderStatus): Long
+
+    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.createdAt BETWEEN :from AND :to AND o.orderStatus <> :status")
+    fun sumTotalAmountByCreatedAtBetweenAndOrderStatusNot(@Param("from") from: LocalDateTime, @Param("to") to: LocalDateTime, @Param("status") status: OrderStatus): BigDecimal
+
     @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.user.id = :userId")
     fun sumTotalAmountByUserId(@Param("userId") userId: Long): BigDecimal
 

@@ -74,11 +74,12 @@ class OrderRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun reorder(orderId: Long): Resource<Order> {
+    override suspend fun reorder(orderId: Long): Resource<String> {
         return try {
             val response = api.reorder(orderId)
             if (response.isSuccessful && response.body()?.success == true) {
-                Resource.Success(response.body()!!.data!!.toDomain())
+                val reorderResult = response.body()!!.data!!
+                Resource.Success(reorderResult.message.ifBlank { "Items added to cart" })
             } else {
                 Resource.Error(response.body()?.error ?: "Failed to reorder")
             }

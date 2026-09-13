@@ -7,7 +7,8 @@ import kotlin.random.Random
 class OrderNumberGenerator {
 
     fun generateOrderNumber(): String {
-        val digits = Random.nextInt(10000, 99999)
-        return "ORD-$digits"
+        val timestamp = System.currentTimeMillis()
+        val random = Random.nextInt(1000, 9999)
+        return "ORD-${timestamp}-${random}"
     }
 }

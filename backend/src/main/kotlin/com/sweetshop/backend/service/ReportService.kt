@@ -26,8 +26,8 @@ class ReportService(
     private val logger = LoggerFactory.getLogger(ReportService::class.java)
 
     fun getSalesReport(from: LocalDateTime, to: LocalDateTime): SalesReportDto {
-        val revenue = orderRepository.sumTotalAmountByCreatedAtBetween(from, to)
-        val orders = orderRepository.countByCreatedAtBetween(from, to)
+        val revenue = orderRepository.sumTotalAmountByCreatedAtBetweenAndOrderStatusNot(from, to, OrderStatus.CANCELLED)
+        val orders = orderRepository.countByCreatedAtBetweenAndOrderStatusNot(from, to, OrderStatus.CANCELLED)
         val averageOrderValue = if (orders > 0) {
             revenue.divide(BigDecimal(orders), 2, RoundingMode.HALF_UP)
         } else {
@@ -47,9 +47,10 @@ class ReportService(
 
     fun getDashboard(): DashboardDto {
         val totalOrders = orderRepository.count()
-        val totalRevenue = orderRepository.sumTotalAmountByCreatedAtBetween(
+        val totalRevenue = orderRepository.sumTotalAmountByCreatedAtBetweenAndOrderStatusNot(
             LocalDateTime.of(2000, 1, 1, 0, 0),
-            LocalDateTime.now()
+            LocalDateTime.now(),
+            OrderStatus.CANCELLED
         )
         val totalCustomers = userRepository.count()
         val totalProducts = productRepository.count()
@@ -97,8 +98,8 @@ class ReportService(
                     val from = date.atStartOfDay()
                     val to = date.atTime(LocalTime.MAX)
 
-                    val revenue = orderRepository.sumTotalAmountByCreatedAtBetween(from, to)
-                    val orders = orderRepository.countByCreatedAtBetween(from, to)
+                    val revenue = orderRepository.sumTotalAmountByCreatedAtBetweenAndOrderStatusNot(from, to, OrderStatus.CANCELLED)
+                    val orders = orderRepository.countByCreatedAtBetweenAndOrderStatusNot(from, to, OrderStatus.CANCELLED)
                     val avg = if (orders > 0) revenue.divide(BigDecimal(orders), 2, RoundingMode.HALF_UP)
                              else BigDecimal.ZERO
 
@@ -119,8 +120,8 @@ class ReportService(
                     val from = weekStart.atStartOfDay()
                     val to = weekEnd.atTime(LocalTime.MAX)
 
-                    val revenue = orderRepository.sumTotalAmountByCreatedAtBetween(from, to)
-                    val orders = orderRepository.countByCreatedAtBetween(from, to)
+                    val revenue = orderRepository.sumTotalAmountByCreatedAtBetweenAndOrderStatusNot(from, to, OrderStatus.CANCELLED)
+                    val orders = orderRepository.countByCreatedAtBetweenAndOrderStatusNot(from, to, OrderStatus.CANCELLED)
                     val avg = if (orders > 0) revenue.divide(BigDecimal(orders), 2, RoundingMode.HALF_UP)
                              else BigDecimal.ZERO
 
@@ -141,8 +142,8 @@ class ReportService(
                     val from = monthStart.atStartOfDay()
                     val to = monthEnd.atTime(LocalTime.MAX)
 
-                    val revenue = orderRepository.sumTotalAmountByCreatedAtBetween(from, to)
-                    val orders = orderRepository.countByCreatedAtBetween(from, to)
+                    val revenue = orderRepository.sumTotalAmountByCreatedAtBetweenAndOrderStatusNot(from, to, OrderStatus.CANCELLED)
+                    val orders = orderRepository.countByCreatedAtBetweenAndOrderStatusNot(from, to, OrderStatus.CANCELLED)
                     val avg = if (orders > 0) revenue.divide(BigDecimal(orders), 2, RoundingMode.HALF_UP)
                              else BigDecimal.ZERO
 

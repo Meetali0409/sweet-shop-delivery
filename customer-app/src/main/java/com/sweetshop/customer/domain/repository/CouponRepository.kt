@@ -5,5 +5,5 @@ import com.sweetshop.customer.util.Resource
 
 interface CouponRepository {
     suspend fun getActiveCoupons(): Resource<List<Coupon>>
-    suspend fun validateCoupon(code: String, orderTotal: Double): Resource<Coupon>
+    suspend fun validateCoupon(code: String): Resource<Boolean>
 }

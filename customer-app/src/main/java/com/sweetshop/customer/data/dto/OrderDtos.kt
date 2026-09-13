@@ -21,7 +21,7 @@ data class OrderDto(
     @SerializedName("orderNumber") val orderNumber: String = "",
     @SerializedName("orderStatus") val orderStatus: String = "PLACED",
     @SerializedName("items") val items: List<OrderItemDto> = emptyList(),
-    @SerializedName("shippingAddress") val shippingAddress: AddressDto? = null,
+    @SerializedName("address") val shippingAddress: AddressDto? = null,
     @SerializedName("subtotal") val subtotal: Double = 0.0,
     @SerializedName("discount") val discount: Double = 0.0,
     @SerializedName("deliveryCharge") val deliveryCharge: Double = 0.0,

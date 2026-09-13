@@ -137,7 +137,7 @@ class AuthViewModel @Inject constructor(
 
         viewModelScope.launch {
             _registerState.update { it.copy(isLoading = true, error = null) }
-            when (val result = authRepository.register(state.name, state.email, state.phone, state.password)) {
+            when (val result = authRepository.register(state.name, state.email, state.phone, state.password, state.confirmPassword)) {
                 is Resource.Success -> {
                     _registerState.update {
                         it.copy(isLoading = false, isSuccess = true)

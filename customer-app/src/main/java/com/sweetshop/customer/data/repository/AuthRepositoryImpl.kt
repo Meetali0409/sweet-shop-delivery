@@ -40,10 +40,11 @@ class AuthRepositoryImpl @Inject constructor(
         name: String,
         email: String,
         phone: String,
-        password: String
+        password: String,
+        confirmPassword: String
     ): Resource<User> {
         return try {
-            val response = api.register(RegisterRequest(name, email, phone, password))
+            val response = api.register(RegisterRequest(name, email, phone, password, confirmPassword))
             if (response.isSuccessful && response.body()?.success == true) {
                 val authResponse = response.body()!!.data!!
                 tokenManager.saveTokens(authResponse.accessToken, authResponse.refreshToken)

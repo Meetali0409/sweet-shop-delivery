@@ -6,10 +6,10 @@ data class CouponDto(
     val description: String?,
     val discountType: String,
     val discountValue: Double,
-    val minimumOrderValue: Double,
+    val minimumOrderValue: Double?,
     val maximumDiscount: Double?,
-    val validFrom: String,
-    val validUntil: String,
+    val validFrom: String?,
+    val validUntil: String?,
     val usageLimit: Int?,
     val usageCount: Int,
     val isActive: Boolean

@@ -76,7 +76,7 @@ class ProductRepositoryImpl @Inject constructor(
 
     override suspend fun getNewArrivals(): Resource<List<Product>> {
         return try {
-            val response = api.getProducts(page = 0, size = 10, sort = "createdAt")
+            val response = api.getProducts(page = 0, size = 10, sort = "createdAt,desc")
             if (response.isSuccessful && response.body()?.success == true) {
                 val products = response.body()!!.data!!.content.map { it.toDomain() }
                 Resource.Success(products)

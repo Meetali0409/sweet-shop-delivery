@@ -16,7 +16,7 @@ class WishlistRepositoryImpl @Inject constructor(
         return try {
             val response = api.getWishlist()
             if (response.isSuccessful && response.body()?.success == true) {
-                val products = response.body()!!.data!!.map { it.toDomain() }
+                val products = response.body()!!.data!!.mapNotNull { it.product?.toDomain() }
                 Resource.Success(products)
             } else {
                 Resource.Error(response.body()?.error ?: "Failed to load wishlist")
@@ -56,7 +56,7 @@ class WishlistRepositoryImpl @Inject constructor(
         return try {
             val response = api.getWishlist()
             if (response.isSuccessful && response.body()?.success == true) {
-                val isInWishlist = response.body()!!.data!!.any { it.id == productId }
+                val isInWishlist = response.body()!!.data!!.any { it.product?.id == productId }
                 Resource.Success(isInWishlist)
             } else {
                 Resource.Success(false)

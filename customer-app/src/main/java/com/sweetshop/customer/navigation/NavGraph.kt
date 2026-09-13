@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -16,6 +18,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.sweetshop.customer.data.api.AuthEvent
+import com.sweetshop.customer.data.api.AuthEventManager
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 import com.sweetshop.customer.ui.auth.LoginScreen
 import com.sweetshop.customer.ui.auth.RegisterScreen
 import com.sweetshop.customer.ui.cart.CartScreen
@@ -35,6 +43,12 @@ import com.sweetshop.customer.ui.profile.ProfileScreen
 import com.sweetshop.customer.ui.splash.SplashScreen
 import com.sweetshop.customer.ui.wishlist.WishlistScreen
 
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface AuthEventEntryPoint {
+    fun authEventManager(): AuthEventManager
+}
+
 @Composable
 fun SweetShopNavGraph(
     navController: NavHostController = rememberNavController()
@@ -42,6 +56,24 @@ fun SweetShopNavGraph(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     var cartItemCount by remember { mutableIntStateOf(0) }
+
+    // Observe session expired events
+    val context = LocalContext.current
+    val authEventManager = remember {
+        EntryPointAccessors.fromApplication(context, AuthEventEntryPoint::class.java)
+            .authEventManager()
+    }
+    LaunchedEffect(Unit) {
+        authEventManager.authEvents.collect { event ->
+            when (event) {
+                is AuthEvent.SessionExpired -> {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            }
+        }
+    }
 
     // Bottom nav routes
     val bottomNavRoutes = listOf(
@@ -133,7 +165,8 @@ fun SweetShopNavGraph(
                     },
                     onNavigateToCategories = {
                         navController.navigate(Screen.Categories.route)
-                    }
+                    },
+                    onCartCountChanged = { count -> cartItemCount = count }
                 )
             }
 

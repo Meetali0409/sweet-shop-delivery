@@ -77,7 +77,14 @@ class OrdersViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingMore = true) }
             val nextPage = state.currentPage + 1
-            when (val result = orderRepository.getOrders(page = nextPage)) {
+            val statusFilter = when (state.selectedTab) {
+                "All" -> null
+                "Processing" -> "PLACED,CONFIRMED,PREPARING"
+                "Delivered" -> "DELIVERED"
+                "Cancelled" -> "CANCELLED"
+                else -> null
+            }
+            when (val result = orderRepository.getOrders(status = statusFilter, page = nextPage)) {
                 is Resource.Success -> {
                     _uiState.update {
                         it.copy(
@@ -163,7 +170,7 @@ class OrdersViewModel @Inject constructor(
         viewModelScope.launch {
             when (val result = orderRepository.reorder(orderId)) {
                 is Resource.Success -> {
-                    _uiState.update { it.copy(message = "Items added to cart") }
+                    _uiState.update { it.copy(message = result.data ?: "Items added to cart") }
                 }
                 is Resource.Error -> {
                     _uiState.update { it.copy(message = result.message) }

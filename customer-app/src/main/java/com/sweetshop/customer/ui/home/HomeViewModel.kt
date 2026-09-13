@@ -8,10 +8,13 @@ import com.sweetshop.customer.domain.repository.CartRepository
 import com.sweetshop.customer.domain.repository.ProductRepository
 import com.sweetshop.customer.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,6 +41,8 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    private var searchJob: Job? = null
+
     init {
         loadHomeData()
     }
@@ -46,50 +51,53 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            // Load categories
-            launch {
-                when (val result = productRepository.getCategories()) {
-                    is Resource.Success -> _uiState.update { it.copy(categories = result.data) }
-                    is Resource.Error -> {}
-                    is Resource.Loading -> {}
-                }
-            }
+            val jobs = listOf(
+                // Load categories
+                launch {
+                    when (val result = productRepository.getCategories()) {
+                        is Resource.Success -> _uiState.update { it.copy(categories = result.data) }
+                        is Resource.Error -> _uiState.update { it.copy(error = result.message) }
+                        is Resource.Loading -> {}
+                    }
+                },
 
-            // Load featured
-            launch {
-                when (val result = productRepository.getFeaturedProducts()) {
-                    is Resource.Success -> _uiState.update { it.copy(featuredProducts = result.data) }
-                    is Resource.Error -> {}
-                    is Resource.Loading -> {}
-                }
-            }
+                // Load featured
+                launch {
+                    when (val result = productRepository.getFeaturedProducts()) {
+                        is Resource.Success -> _uiState.update { it.copy(featuredProducts = result.data) }
+                        is Resource.Error -> {}
+                        is Resource.Loading -> {}
+                    }
+                },
 
-            // Load bestsellers
-            launch {
-                when (val result = productRepository.getBestsellers()) {
-                    is Resource.Success -> _uiState.update { it.copy(bestsellers = result.data) }
-                    is Resource.Error -> {}
-                    is Resource.Loading -> {}
-                }
-            }
+                // Load bestsellers
+                launch {
+                    when (val result = productRepository.getBestsellers()) {
+                        is Resource.Success -> _uiState.update { it.copy(bestsellers = result.data) }
+                        is Resource.Error -> {}
+                        is Resource.Loading -> {}
+                    }
+                },
 
-            // Load new arrivals
-            launch {
-                when (val result = productRepository.getNewArrivals()) {
-                    is Resource.Success -> _uiState.update { it.copy(newArrivals = result.data) }
-                    is Resource.Error -> {}
-                    is Resource.Loading -> {}
-                }
-            }
+                // Load new arrivals
+                launch {
+                    when (val result = productRepository.getNewArrivals()) {
+                        is Resource.Success -> _uiState.update { it.copy(newArrivals = result.data) }
+                        is Resource.Error -> {}
+                        is Resource.Loading -> {}
+                    }
+                },
 
-            // Load cart count
-            launch {
-                when (val result = cartRepository.getCartItemCount()) {
-                    is Resource.Success -> _uiState.update { it.copy(cartItemCount = result.data) }
-                    else -> {}
+                // Load cart count
+                launch {
+                    when (val result = cartRepository.getCartItemCount()) {
+                        is Resource.Success -> _uiState.update { it.copy(cartItemCount = result.data) }
+                        else -> {}
+                    }
                 }
-            }
+            )
 
+            jobs.joinAll()
             _uiState.update { it.copy(isLoading = false) }
         }
     }
@@ -97,11 +105,14 @@ class HomeViewModel @Inject constructor(
     fun onSearchQueryChange(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
         if (query.isBlank()) {
+            searchJob?.cancel()
             _uiState.update { it.copy(isSearching = false, searchResults = emptyList()) }
             return
         }
-        _uiState.update { it.copy(isSearching = true) }
-        viewModelScope.launch {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            delay(400) // debounce
+            _uiState.update { it.copy(isSearching = true) }
             when (val result = productRepository.searchProducts(query)) {
                 is Resource.Success -> _uiState.update {
                     it.copy(searchResults = result.data, isSearching = false)

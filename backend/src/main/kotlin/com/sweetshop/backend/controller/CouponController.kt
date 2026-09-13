@@ -20,9 +20,9 @@ class CouponController(
 
     @PostMapping("/validate")
     fun validateCoupon(
-        @Valid @RequestBody request: ApplyCouponRequest
+        @Valid @RequestBody request: ValidateCouponRequest
     ): ResponseEntity<ApiResponse<CouponValidationResponse>> {
-        val response = couponService.validateCoupon(request.couponCode, java.math.BigDecimal.ZERO)
+        val response = couponService.validateCoupon(request.couponCode, request.orderTotal)
         return ResponseEntity.ok(ApiResponse(success = true, data = response))
     }
 }

@@ -104,7 +104,7 @@ interface SweetShopApi {
     ): Response<ApiResponse<OrderDto>>
 
     @POST("orders/{id}/reorder")
-    suspend fun reorder(@Path("id") orderId: Long): Response<ApiResponse<OrderDto>>
+    suspend fun reorder(@Path("id") orderId: Long): Response<ApiResponse<ReorderResponse>>
 
     // ==================== Addresses ====================
 
@@ -129,7 +129,7 @@ interface SweetShopApi {
     // ==================== Wishlist ====================
 
     @GET("wishlist")
-    suspend fun getWishlist(): Response<ApiResponse<List<ProductDto>>>
+    suspend fun getWishlist(): Response<ApiResponse<List<WishlistItemDto>>>
 
     @POST("wishlist/{productId}")
     suspend fun addToWishlist(@Path("productId") productId: Long): Response<ApiResponse<Unit>>
@@ -143,7 +143,7 @@ interface SweetShopApi {
     suspend fun getActiveCoupons(): Response<ApiResponse<List<CouponDto>>>
 
     @POST("coupons/validate")
-    suspend fun validateCoupon(@Body request: ValidateCouponRequest): Response<ApiResponse<CouponDto>>
+    suspend fun validateCoupon(@Body request: ValidateCouponRequest): Response<ApiResponse<CouponValidationResponse>>
 
     // ==================== Reviews ====================
 
@@ -187,45 +187,68 @@ interface SweetShopApi {
 
 data class CouponDto(
     val id: Long = 0,
-    val code: String = "",
-    val description: String = "",
+    val couponCode: String = "",
+    val description: String? = null,
     val discountType: String = "PERCENTAGE",
     val discountValue: Double = 0.0,
-    val minOrderAmount: Double = 0.0,
-    val maxDiscount: Double = 0.0,
-    val isActive: Boolean = true,
-    val expiresAt: String? = null
+    val minimumOrderValue: Double? = null,
+    val maximumDiscount: Double? = null,
+    val validFrom: String? = null,
+    val validUntil: String? = null,
+    val usageLimit: Int? = null,
+    val usageCount: Int = 0,
+    val isActive: Boolean = true
 ) {
     fun toDomain() = com.sweetshop.customer.domain.model.Coupon(
         id = id,
-        code = code,
-        description = description,
+        code = couponCode,
+        description = description ?: "",
         discountType = discountType,
         discountValue = discountValue,
-        minOrderAmount = minOrderAmount,
-        maxDiscount = maxDiscount,
+        minOrderAmount = minimumOrderValue ?: 0.0,
+        maxDiscount = maximumDiscount ?: 0.0,
         isActive = isActive,
-        expiresAt = expiresAt
+        expiresAt = validUntil
     )
 }
 
+data class CouponValidationResponse(
+    val isValid: Boolean = false,
+    val discount: Double = 0.0,
+    val message: String = ""
+)
+
 data class ValidateCouponRequest(
-    val code: String,
-    val orderTotal: Double
+    val couponCode: String
 )
 
 data class ReviewDto(
     val id: Long = 0,
     val userId: Long = 0,
     val userName: String = "",
+    val productId: Long = 0,
+    val orderId: Long = 0,
     val rating: Int = 0,
-    val comment: String = "",
+    val review: String? = null,
     val createdAt: String? = null
 )
 
 data class CreateReviewRequest(
+    val orderId: Long,
     val rating: Int,
-    val comment: String
+    val review: String? = null
+)
+
+data class ReorderResponse(
+    val addedItems: List<String> = emptyList(),
+    val unavailableItems: List<String> = emptyList(),
+    val message: String = ""
+)
+
+data class WishlistItemDto(
+    val id: Long = 0,
+    val product: com.sweetshop.customer.data.dto.ProductDto? = null,
+    val addedAt: String? = null
 )
 
 data class NotificationDto(

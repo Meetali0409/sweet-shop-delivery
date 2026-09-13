@@ -36,11 +36,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -48,7 +50,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.sweetshop.admin.data.dto.CouponDto
 import com.sweetshop.admin.ui.components.ErrorState
 import com.sweetshop.admin.ui.components.LoadingState
@@ -68,6 +72,13 @@ fun CouponListScreen(
 ) {
     val state by viewModel.listState.collectAsStateWithLifecycle()
     var deleteCouponId by remember { mutableStateOf<Long?>(null) }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            viewModel.loadCoupons()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -259,7 +270,7 @@ private fun CouponCard(
                         color = AdminPrimary
                     )
                     Text(
-                        text = "Min: ${coupon.minimumOrderValue.toRupees()}",
+                        text = "Min: ${coupon.minimumOrderValue?.toRupees() ?: "N/A"}",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
                     )
@@ -272,7 +283,7 @@ private fun CouponCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Valid: ${coupon.validFrom.toDisplayDate()} - ${coupon.validUntil.toDisplayDate()}",
+                        text = "Valid: ${coupon.validFrom?.toDisplayDate() ?: "N/A"} - ${coupon.validUntil?.toDisplayDate() ?: "N/A"}",
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.Gray
                     )

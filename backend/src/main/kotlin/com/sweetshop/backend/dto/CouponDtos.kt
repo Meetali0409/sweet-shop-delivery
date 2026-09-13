@@ -63,6 +63,12 @@ data class ApplyCouponRequest(
     val couponCode: String
 )
 
+data class ValidateCouponRequest(
+    @field:NotBlank(message = "Coupon code is required")
+    val couponCode: String,
+    val orderTotal: BigDecimal = BigDecimal.ZERO
+)
+
 data class CouponValidationResponse(
     val isValid: Boolean,
     val discount: BigDecimal = BigDecimal.ZERO,

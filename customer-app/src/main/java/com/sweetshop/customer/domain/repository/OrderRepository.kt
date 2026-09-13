@@ -19,5 +19,5 @@ interface OrderRepository {
 
     suspend fun getOrderById(orderId: Long): Resource<Order>
     suspend fun cancelOrder(orderId: Long, reason: String): Resource<Order>
-    suspend fun reorder(orderId: Long): Resource<Order>
+    suspend fun reorder(orderId: Long): Resource<String>
 }

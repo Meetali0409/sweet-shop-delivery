@@ -76,7 +76,7 @@ class InventoryViewModel @Inject constructor(
 
         viewModelScope.launch {
             _state.update { it.copy(updatingProductId = productId) }
-            when (inventoryRepository.updateStock(productId, quantity)) {
+            when (val result = inventoryRepository.updateStock(productId, quantity)) {
                 is Resource.Success -> {
                     _state.update {
                         it.copy(
@@ -87,7 +87,7 @@ class InventoryViewModel @Inject constructor(
                     loadInventory()
                 }
                 is Resource.Error -> {
-                    _state.update { it.copy(updatingProductId = null) }
+                    _state.update { it.copy(updatingProductId = null, error = result.message) }
                 }
                 is Resource.Loading -> {}
             }

@@ -33,7 +33,7 @@ class TokenRefreshInterceptor @Inject constructor(
             return response
         }
 
-        if (response.code == 401 || response.code == 403) {
+        if (response.code == 401) {
             synchronized(this) {
                 // Check if another thread already refreshed the token
                 val currentToken = tokenManager.getAccessTokenSync()
@@ -72,7 +72,15 @@ class TokenRefreshInterceptor @Inject constructor(
                     runBlocking { tokenManager.clearAll() }
                     authEventManager.emitSessionExpired()
                 } else {
-                    isRefreshing = false
+                    // Another thread is already refreshing; retry with the (presumably refreshed) token
+                    val refreshedToken = tokenManager.getAccessTokenSync()
+                    if (refreshedToken != null) {
+                        response.close()
+                        val newRequest = originalRequest.newBuilder()
+                            .header("Authorization", "Bearer $refreshedToken")
+                            .build()
+                        return chain.proceed(newRequest)
+                    }
                 }
             }
         }

@@ -61,10 +61,15 @@ fun HomeScreen(
     onNavigateToProductDetail: (Long) -> Unit,
     onNavigateToCategory: (Long) -> Unit,
     onNavigateToCategories: () -> Unit,
+    onCartCountChanged: ((Int) -> Unit)? = null,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(state.cartItemCount) {
+        onCartCountChanged?.invoke(state.cartItemCount)
+    }
 
     LaunchedEffect(state.addToCartMessage) {
         state.addToCartMessage?.let {
@@ -96,59 +101,85 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Promotional Banner
-                PromotionalBanner()
+                if (state.searchQuery.isNotBlank()) {
+                    // Search Results
+                    if (state.isSearching) {
+                        LoadingState(message = "Searching...")
+                    } else if (state.searchResults.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No results found for \"${state.searchQuery}\"",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        SectionHeader(title = "Search Results (${state.searchResults.size})")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ProductsRow(
+                            products = state.searchResults,
+                            onProductClick = onNavigateToProductDetail,
+                            onAddToCart = viewModel::addToCart
+                        )
+                    }
+                } else {
+                    // Promotional Banner
+                    PromotionalBanner()
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Categories section
-                if (state.categories.isNotEmpty()) {
-                    SectionHeader(
-                        title = "Categories",
-                        onSeeAllClick = onNavigateToCategories
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    CategoriesRow(
-                        categories = state.categories,
-                        onCategoryClick = onNavigateToCategory
-                    )
                     Spacer(modifier = Modifier.height(20.dp))
-                }
 
-                // Featured Products
-                if (state.featuredProducts.isNotEmpty()) {
-                    SectionHeader(title = "Popular Sweets")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ProductsRow(
-                        products = state.featuredProducts,
-                        onProductClick = onNavigateToProductDetail,
-                        onAddToCart = viewModel::addToCart
-                    )
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
+                    // Categories section
+                    if (state.categories.isNotEmpty()) {
+                        SectionHeader(
+                            title = "Categories",
+                            onSeeAllClick = onNavigateToCategories
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        CategoriesRow(
+                            categories = state.categories,
+                            onCategoryClick = onNavigateToCategory
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
 
-                // Bestsellers
-                if (state.bestsellers.isNotEmpty()) {
-                    SectionHeader(title = "Bestsellers")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ProductsRow(
-                        products = state.bestsellers,
-                        onProductClick = onNavigateToProductDetail,
-                        onAddToCart = viewModel::addToCart
-                    )
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
+                    // Featured Products
+                    if (state.featuredProducts.isNotEmpty()) {
+                        SectionHeader(title = "Popular Sweets")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ProductsRow(
+                            products = state.featuredProducts,
+                            onProductClick = onNavigateToProductDetail,
+                            onAddToCart = viewModel::addToCart
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
 
-                // New Arrivals
-                if (state.newArrivals.isNotEmpty()) {
-                    SectionHeader(title = "New Arrivals")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ProductsRow(
-                        products = state.newArrivals,
-                        onProductClick = onNavigateToProductDetail,
-                        onAddToCart = viewModel::addToCart
-                    )
-                    Spacer(modifier = Modifier.height(20.dp))
+                    // Bestsellers
+                    if (state.bestsellers.isNotEmpty()) {
+                        SectionHeader(title = "Bestsellers")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ProductsRow(
+                            products = state.bestsellers,
+                            onProductClick = onNavigateToProductDetail,
+                            onAddToCart = viewModel::addToCart
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
+
+                    // New Arrivals
+                    if (state.newArrivals.isNotEmpty()) {
+                        SectionHeader(title = "New Arrivals")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ProductsRow(
+                            products = state.newArrivals,
+                            onProductClick = onNavigateToProductDetail,
+                            onAddToCart = viewModel::addToCart
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(80.dp))

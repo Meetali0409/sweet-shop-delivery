@@ -71,13 +71,15 @@ class CouponViewModel @Inject constructor(
 
     fun deleteCoupon(couponId: Long) {
         viewModelScope.launch {
-            when (couponRepository.deleteCoupon(couponId)) {
+            when (val result = couponRepository.deleteCoupon(couponId)) {
                 is Resource.Success -> {
                     _listState.update { state ->
                         state.copy(coupons = state.coupons.filter { it.id != couponId })
                     }
                 }
-                is Resource.Error -> {}
+                is Resource.Error -> {
+                    _listState.update { it.copy(error = result.message) }
+                }
                 is Resource.Loading -> {}
             }
         }
@@ -98,10 +100,10 @@ class CouponViewModel @Inject constructor(
                                 description = coupon.description ?: "",
                                 discountType = coupon.discountType,
                                 discountValue = coupon.discountValue.toString(),
-                                minimumOrderValue = coupon.minimumOrderValue.toString(),
+                                minimumOrderValue = coupon.minimumOrderValue?.toString() ?: "",
                                 maximumDiscount = coupon.maximumDiscount?.toString() ?: "",
-                                validFrom = coupon.validFrom,
-                                validUntil = coupon.validUntil,
+                                validFrom = coupon.validFrom ?: "",
+                                validUntil = coupon.validUntil ?: "",
                                 usageLimit = coupon.usageLimit?.toString() ?: "",
                                 isActive = coupon.isActive
                             )

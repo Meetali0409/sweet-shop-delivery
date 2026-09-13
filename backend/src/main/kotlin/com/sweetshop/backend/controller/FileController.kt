@@ -34,7 +34,11 @@ class FileController(
 
     @GetMapping("/{fileName}")
     fun getFile(@PathVariable fileName: String): ResponseEntity<Resource> {
-        val filePath = Paths.get(uploadDir).toAbsolutePath().normalize().resolve(fileName)
+        val baseDir = Paths.get(uploadDir).toAbsolutePath().normalize()
+        val filePath = baseDir.resolve(fileName).normalize()
+        if (!filePath.startsWith(baseDir)) {
+            return ResponseEntity.badRequest().build()
+        }
         val resource = UrlResource(filePath.toUri())
 
         if (!resource.exists()) {

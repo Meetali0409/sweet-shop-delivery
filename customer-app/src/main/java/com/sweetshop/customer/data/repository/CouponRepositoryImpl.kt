@@ -27,11 +27,16 @@ class CouponRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun validateCoupon(code: String, orderTotal: Double): Resource<Coupon> {
+    override suspend fun validateCoupon(code: String): Resource<Boolean> {
         return try {
-            val response = api.validateCoupon(ValidateCouponRequest(code, orderTotal))
+            val response = api.validateCoupon(ValidateCouponRequest(code))
             if (response.isSuccessful && response.body()?.success == true) {
-                Resource.Success(response.body()!!.data!!.toDomain())
+                val validationResult = response.body()!!.data!!
+                if (validationResult.isValid) {
+                    Resource.Success(true)
+                } else {
+                    Resource.Error(validationResult.message.ifBlank { "Invalid coupon" })
+                }
             } else {
                 Resource.Error(response.body()?.error ?: "Invalid coupon")
             }

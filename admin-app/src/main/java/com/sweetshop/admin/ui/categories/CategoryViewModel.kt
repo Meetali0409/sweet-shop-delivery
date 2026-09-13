@@ -75,7 +75,7 @@ class CategoryViewModel @Inject constructor(
                 editingCategory = category,
                 dialogName = category.name,
                 dialogDescription = category.description ?: "",
-                dialogImage = category.image ?: "",
+                dialogImage = category.imageUrl ?: "",
                 dialogError = null
             )
         }
@@ -178,13 +178,15 @@ class CategoryViewModel @Inject constructor(
 
     fun deleteCategory(categoryId: Long) {
         viewModelScope.launch {
-            when (categoryRepository.deleteCategory(categoryId)) {
+            when (val result = categoryRepository.deleteCategory(categoryId)) {
                 is Resource.Success -> {
                     _state.update { state ->
                         state.copy(categories = state.categories.filter { it.id != categoryId })
                     }
                 }
-                is Resource.Error -> {}
+                is Resource.Error -> {
+                    _state.update { it.copy(error = result.message) }
+                }
                 is Resource.Loading -> {}
             }
         }

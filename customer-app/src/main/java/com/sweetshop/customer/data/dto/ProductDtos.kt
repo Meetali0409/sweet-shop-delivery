@@ -65,7 +65,7 @@ data class ProductVariantDto(
     @SerializedName("id") val id: Long = 0,
     @SerializedName("weight") val weight: String = "",
     @SerializedName("price") val price: Double = 0.0,
-    @SerializedName("discountedPrice") val discountedPrice: Double? = null,
+    @SerializedName("discountPrice") val discountedPrice: Double? = null,
     @SerializedName("isAvailable") val isAvailable: Boolean = true,
     @SerializedName("sku") val sku: String = ""
 ) {
