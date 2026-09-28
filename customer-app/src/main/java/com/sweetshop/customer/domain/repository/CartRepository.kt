@@ -2,8 +2,11 @@ package com.sweetshop.customer.domain.repository
 
 import com.sweetshop.customer.domain.model.Cart
 import com.sweetshop.customer.util.Resource
+import kotlinx.coroutines.flow.StateFlow
 
 interface CartRepository {
+    val cartItemCount: StateFlow<Int>
+
     suspend fun getCart(): Resource<Cart>
     suspend fun addToCart(productId: Long, selectedWeight: String?, quantity: Int): Resource<Cart>
     suspend fun updateCartItem(itemId: Long, quantity: Int): Resource<Cart>

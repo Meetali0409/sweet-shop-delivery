@@ -14,6 +14,8 @@ fun Product.toDto(isInWishlist: Boolean = false): ProductDto = ProductDto(
     description = this.description,
     categoryId = this.category.id,
     categoryName = this.category.name,
+    categoryIds = this.categories.map { it.id }.ifEmpty { listOf(this.category.id) },
+    categoryNames = this.categories.map { it.name }.ifEmpty { listOf(this.category.name) },
     imageUrl = this.imageUrl,
     price = this.price,
     discountPrice = this.discountPrice,
@@ -42,7 +44,8 @@ fun Product.toListDto(): ProductListDto = ProductListDto(
     totalReviews = this.totalReviews,
     isAvailable = this.isAvailable,
     isBestseller = this.isBestseller,
-    categoryName = this.category.name
+    categoryName = this.category.name,
+    categoryNames = this.categories.map { it.name }.ifEmpty { listOf(this.category.name) }
 )
 
 fun ProductWeight.toDto(): ProductWeightDto = ProductWeightDto(
@@ -52,10 +55,11 @@ fun ProductWeight.toDto(): ProductWeightDto = ProductWeightDto(
     discountPrice = this.discountPrice
 )
 
-fun CreateProductRequest.toEntity(category: Category): Product = Product(
+fun CreateProductRequest.toEntity(categories: List<Category>): Product = Product(
     name = this.name,
     description = this.description,
-    category = category,
+    category = categories.first(),
+    categories = categories.toMutableSet(),
     imageUrl = this.imageUrl,
     price = this.price,
     discountPrice = this.discountPrice,

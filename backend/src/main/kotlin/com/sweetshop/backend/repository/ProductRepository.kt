@@ -15,7 +15,8 @@ interface ProductRepository : JpaRepository<Product, Long> {
 
     fun findByIsAvailableTrue(pageable: Pageable): Page<Product>
 
-    fun findByCategoryIdAndIsAvailableTrue(categoryId: Long, pageable: Pageable): Page<Product>
+    @Query("SELECT p FROM Product p JOIN p.categories c WHERE c.id = :categoryId AND p.isAvailable = true")
+    fun findByCategoriesIdAndIsAvailableTrue(@Param("categoryId") categoryId: Long, pageable: Pageable): Page<Product>
 
     fun findByIsFeaturedTrueAndIsAvailableTrue(pageable: Pageable): Page<Product>
 
@@ -34,5 +35,6 @@ interface ProductRepository : JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.id = :id")
     fun findByIdForUpdate(@Param("id") id: Long): Product?
 
-    fun countByCategoryId(categoryId: Long): Long
+    @Query("SELECT COUNT(p) FROM Product p JOIN p.categories c WHERE c.id = :categoryId")
+    fun countByCategoriesId(@Param("categoryId") categoryId: Long): Long
 }

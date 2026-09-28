@@ -3,6 +3,7 @@ package com.sweetshop.customer.ui.product
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sweetshop.customer.domain.model.CartItem
 import com.sweetshop.customer.domain.model.Product
 import com.sweetshop.customer.domain.repository.CartRepository
 import com.sweetshop.customer.domain.repository.ProductRepository
@@ -32,7 +33,8 @@ data class ProductListUiState(
     val hasMore: Boolean = true,
     val isLoadingMore: Boolean = false,
     val categoryId: Long? = null,
-    val addToCartMessage: String? = null
+    val addToCartMessage: String? = null,
+    val cartItemsByProductId: Map<Long, CartItem> = emptyMap()
 )
 
 @HiltViewModel
@@ -49,6 +51,26 @@ class ProductListViewModel @Inject constructor(
         val categoryId = savedStateHandle.get<Long>("categoryId")
         _uiState.update { it.copy(categoryId = categoryId) }
         loadProducts()
+        loadCart()
+    }
+
+    private fun loadCart() {
+        viewModelScope.launch {
+            when (val result = cartRepository.getCart()) {
+                is Resource.Success -> _uiState.update {
+                    it.copy(cartItemsByProductId = buildCartMap(result.data.items))
+                }
+                else -> {}
+            }
+        }
+    }
+
+    private fun buildCartMap(items: List<CartItem>): Map<Long, CartItem> {
+        return items
+            .groupBy { it.productId }
+            .mapValues { (_, itemsForProduct) ->
+                itemsForProduct.firstOrNull { it.variantId == null } ?: itemsForProduct.first()
+            }
     }
 
     fun loadProducts() {
@@ -125,11 +147,52 @@ class ProductListViewModel @Inject constructor(
         viewModelScope.launch {
             when (val result = cartRepository.addToCart(productId, null, 1)) {
                 is Resource.Success -> {
-                    _uiState.update { it.copy(addToCartMessage = "Added to cart") }
+                    _uiState.update {
+                        it.copy(
+                            addToCartMessage = "Added to cart",
+                            cartItemsByProductId = buildCartMap(result.data.items)
+                        )
+                    }
                 }
                 is Resource.Error -> {
                     _uiState.update { it.copy(addToCartMessage = result.message) }
                 }
+                is Resource.Loading -> {}
+            }
+        }
+    }
+
+    fun incrementCartItem(productId: Long) {
+        val existing = _uiState.value.cartItemsByProductId[productId]
+        if (existing == null) {
+            addToCart(productId)
+            return
+        }
+        viewModelScope.launch {
+            when (val result = cartRepository.updateCartItem(existing.id, existing.quantity + 1)) {
+                is Resource.Success -> {
+                    _uiState.update { it.copy(cartItemsByProductId = buildCartMap(result.data.items)) }
+                }
+                is Resource.Error -> _uiState.update { it.copy(addToCartMessage = result.message) }
+                is Resource.Loading -> {}
+            }
+        }
+    }
+
+    fun decrementCartItem(productId: Long) {
+        val existing = _uiState.value.cartItemsByProductId[productId] ?: return
+        viewModelScope.launch {
+            val newQuantity = existing.quantity - 1
+            val result = if (newQuantity < 1) {
+                cartRepository.removeCartItem(existing.id)
+            } else {
+                cartRepository.updateCartItem(existing.id, newQuantity)
+            }
+            when (result) {
+                is Resource.Success -> {
+                    _uiState.update { it.copy(cartItemsByProductId = buildCartMap(result.data.items)) }
+                }
+                is Resource.Error -> _uiState.update { it.copy(addToCartMessage = result.message) }
                 is Resource.Loading -> {}
             }
         }

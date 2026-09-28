@@ -295,9 +295,12 @@ private fun ProductCard(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
-                        product.categoryName?.let {
+                        val categoriesLabel = product.categoryNames?.ifEmpty {
+                            listOfNotNull(product.categoryName)
+                        }?.joinToString(", ") ?: (product.categoryName ?: "")
+                        if (categoriesLabel.isNotBlank()) {
                             Text(
-                                text = it,
+                                text = categoriesLabel,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Color.Gray
                             )

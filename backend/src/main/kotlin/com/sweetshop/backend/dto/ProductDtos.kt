@@ -3,6 +3,7 @@ package com.sweetshop.backend.dto
 import jakarta.validation.constraints.DecimalMin
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
 import java.math.BigDecimal
 
@@ -12,6 +13,8 @@ data class ProductDto(
     val description: String?,
     val categoryId: Long,
     val categoryName: String,
+    val categoryIds: List<Long>,
+    val categoryNames: List<String>,
     val imageUrl: String?,
     val price: BigDecimal,
     val discountPrice: BigDecimal?,
@@ -40,7 +43,8 @@ data class ProductListDto(
     val totalReviews: Int,
     val isAvailable: Boolean,
     val isBestseller: Boolean,
-    val categoryName: String
+    val categoryName: String,
+    val categoryNames: List<String>
 )
 
 data class ProductWeightDto(
@@ -56,8 +60,8 @@ data class CreateProductRequest(
 
     val description: String? = null,
 
-    @field:NotNull(message = "Category ID is required")
-    val categoryId: Long,
+    @field:NotEmpty(message = "At least one category is required")
+    val categoryIds: List<Long>,
 
     val imageUrl: String? = null,
 
@@ -97,7 +101,7 @@ data class CreateProductWeightRequest(
 data class UpdateProductRequest(
     val name: String? = null,
     val description: String? = null,
-    val categoryId: Long? = null,
+    val categoryIds: List<Long>? = null,
     val imageUrl: String? = null,
     val price: BigDecimal? = null,
     val discountPrice: BigDecimal? = null,

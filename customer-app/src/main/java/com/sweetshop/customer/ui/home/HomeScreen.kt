@@ -61,15 +61,10 @@ fun HomeScreen(
     onNavigateToProductDetail: (Long) -> Unit,
     onNavigateToCategory: (Long) -> Unit,
     onNavigateToCategories: () -> Unit,
-    onCartCountChanged: ((Int) -> Unit)? = null,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-
-    LaunchedEffect(state.cartItemCount) {
-        onCartCountChanged?.invoke(state.cartItemCount)
-    }
 
     LaunchedEffect(state.addToCartMessage) {
         state.addToCartMessage?.let {
@@ -122,7 +117,10 @@ fun HomeScreen(
                         ProductsRow(
                             products = state.searchResults,
                             onProductClick = onNavigateToProductDetail,
-                            onAddToCart = viewModel::addToCart
+                            onAddToCart = viewModel::addToCart,
+                            cartItemsByProductId = state.cartItemsByProductId,
+                            onIncrement = viewModel::incrementCartItem,
+                            onDecrement = viewModel::decrementCartItem
                         )
                     }
                 } else {
@@ -152,7 +150,10 @@ fun HomeScreen(
                         ProductsRow(
                             products = state.featuredProducts,
                             onProductClick = onNavigateToProductDetail,
-                            onAddToCart = viewModel::addToCart
+                            onAddToCart = viewModel::addToCart,
+                            cartItemsByProductId = state.cartItemsByProductId,
+                            onIncrement = viewModel::incrementCartItem,
+                            onDecrement = viewModel::decrementCartItem
                         )
                         Spacer(modifier = Modifier.height(20.dp))
                     }
@@ -164,7 +165,10 @@ fun HomeScreen(
                         ProductsRow(
                             products = state.bestsellers,
                             onProductClick = onNavigateToProductDetail,
-                            onAddToCart = viewModel::addToCart
+                            onAddToCart = viewModel::addToCart,
+                            cartItemsByProductId = state.cartItemsByProductId,
+                            onIncrement = viewModel::incrementCartItem,
+                            onDecrement = viewModel::decrementCartItem
                         )
                         Spacer(modifier = Modifier.height(20.dp))
                     }
@@ -176,7 +180,10 @@ fun HomeScreen(
                         ProductsRow(
                             products = state.newArrivals,
                             onProductClick = onNavigateToProductDetail,
-                            onAddToCart = viewModel::addToCart
+                            onAddToCart = viewModel::addToCart,
+                            cartItemsByProductId = state.cartItemsByProductId,
+                            onIncrement = viewModel::incrementCartItem,
+                            onDecrement = viewModel::decrementCartItem
                         )
                         Spacer(modifier = Modifier.height(20.dp))
                     }
@@ -382,7 +389,10 @@ private fun CategoryChip(
 private fun ProductsRow(
     products: List<Product>,
     onProductClick: (Long) -> Unit,
-    onAddToCart: (Long) -> Unit
+    onAddToCart: (Long) -> Unit,
+    cartItemsByProductId: Map<Long, com.sweetshop.customer.domain.model.CartItem> = emptyMap(),
+    onIncrement: (Long) -> Unit = onAddToCart,
+    onDecrement: (Long) -> Unit = {}
 ) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp),
@@ -393,7 +403,10 @@ private fun ProductsRow(
                 product = product,
                 onClick = { onProductClick(product.id) },
                 onAddToCart = { onAddToCart(product.id) },
-                modifier = Modifier.width(170.dp)
+                modifier = Modifier.width(170.dp),
+                quantityInCart = cartItemsByProductId[product.id]?.quantity ?: 0,
+                onIncrement = { onIncrement(product.id) },
+                onDecrement = { onDecrement(product.id) }
             )
         }
     }

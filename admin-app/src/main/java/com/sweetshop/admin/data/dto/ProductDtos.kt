@@ -6,6 +6,8 @@ data class ProductDto(
     val description: String?,
     val categoryId: Long,
     val categoryName: String?,
+    val categoryIds: List<Long>? = null,
+    val categoryNames: List<String>? = null,
     val imageUrl: String?,
     val price: Double,
     val discountPrice: Double?,
@@ -33,7 +35,8 @@ data class ProductListDto(
     val totalReviews: Int,
     val isAvailable: Boolean,
     val isBestseller: Boolean,
-    val categoryName: String?
+    val categoryName: String?,
+    val categoryNames: List<String>? = null
 )
 
 data class ProductWeightDto(
@@ -46,7 +49,7 @@ data class ProductWeightDto(
 data class CreateProductRequest(
     val name: String,
     val description: String?,
-    val categoryId: Long,
+    val categoryIds: List<Long>,
     val imageUrl: String? = null,
     val price: Double,
     val discountPrice: Double?,
@@ -63,7 +66,7 @@ data class CreateProductRequest(
 data class UpdateProductRequest(
     val name: String?,
     val description: String?,
-    val categoryId: Long?,
+    val categoryIds: List<Long>?,
     val imageUrl: String? = null,
     val price: Double?,
     val discountPrice: Double?,

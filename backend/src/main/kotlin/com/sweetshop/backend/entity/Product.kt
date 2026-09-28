@@ -22,6 +22,14 @@ class Product(
     @JoinColumn(name = "category_id", nullable = false)
     var category: Category,
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "product_categories",
+        joinColumns = [JoinColumn(name = "product_id")],
+        inverseJoinColumns = [JoinColumn(name = "category_id")]
+    )
+    var categories: MutableSet<Category> = mutableSetOf(),
+
     @Column(name = "image_url")
     var imageUrl: String? = null,
 

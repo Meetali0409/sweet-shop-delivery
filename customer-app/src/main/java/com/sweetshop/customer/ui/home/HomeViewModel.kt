@@ -3,6 +3,7 @@ package com.sweetshop.customer.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sweetshop.customer.domain.model.Category
+import com.sweetshop.customer.domain.model.CartItem
 import com.sweetshop.customer.domain.model.Product
 import com.sweetshop.customer.domain.repository.CartRepository
 import com.sweetshop.customer.domain.repository.ProductRepository
@@ -28,6 +29,7 @@ data class HomeUiState(
     val isLoading: Boolean = true,
     val error: String? = null,
     val cartItemCount: Int = 0,
+    val cartItemsByProductId: Map<Long, CartItem> = emptyMap(),
     val isSearching: Boolean = false,
     val addToCartMessage: String? = null
 )
@@ -88,10 +90,15 @@ class HomeViewModel @Inject constructor(
                     }
                 },
 
-                // Load cart count
+                // Load cart
                 launch {
-                    when (val result = cartRepository.getCartItemCount()) {
-                        is Resource.Success -> _uiState.update { it.copy(cartItemCount = result.data) }
+                    when (val result = cartRepository.getCart()) {
+                        is Resource.Success -> _uiState.update {
+                            it.copy(
+                                cartItemCount = result.data.itemCount,
+                                cartItemsByProductId = buildCartMap(result.data.items)
+                            )
+                        }
                         else -> {}
                     }
                 }
@@ -100,6 +107,14 @@ class HomeViewModel @Inject constructor(
             jobs.joinAll()
             _uiState.update { it.copy(isLoading = false) }
         }
+    }
+
+    private fun buildCartMap(items: List<CartItem>): Map<Long, CartItem> {
+        return items
+            .groupBy { it.productId }
+            .mapValues { (_, itemsForProduct) ->
+                itemsForProduct.firstOrNull { it.variantId == null } ?: itemsForProduct.first()
+            }
     }
 
     fun onSearchQueryChange(query: String) {
@@ -130,6 +145,7 @@ class HomeViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             cartItemCount = result.data.itemCount,
+                            cartItemsByProductId = buildCartMap(result.data.items),
                             addToCartMessage = "Added to cart"
                         )
                     }
@@ -137,6 +153,52 @@ class HomeViewModel @Inject constructor(
                 is Resource.Error -> {
                     _uiState.update { it.copy(addToCartMessage = result.message) }
                 }
+                is Resource.Loading -> {}
+            }
+        }
+    }
+
+    fun incrementCartItem(productId: Long) {
+        val existing = _uiState.value.cartItemsByProductId[productId]
+        if (existing == null) {
+            addToCart(productId)
+            return
+        }
+        viewModelScope.launch {
+            when (val result = cartRepository.updateCartItem(existing.id, existing.quantity + 1)) {
+                is Resource.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            cartItemCount = result.data.itemCount,
+                            cartItemsByProductId = buildCartMap(result.data.items)
+                        )
+                    }
+                }
+                is Resource.Error -> _uiState.update { it.copy(addToCartMessage = result.message) }
+                is Resource.Loading -> {}
+            }
+        }
+    }
+
+    fun decrementCartItem(productId: Long) {
+        val existing = _uiState.value.cartItemsByProductId[productId] ?: return
+        viewModelScope.launch {
+            val newQuantity = existing.quantity - 1
+            val result = if (newQuantity < 1) {
+                cartRepository.removeCartItem(existing.id)
+            } else {
+                cartRepository.updateCartItem(existing.id, newQuantity)
+            }
+            when (result) {
+                is Resource.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            cartItemCount = result.data.itemCount,
+                            cartItemsByProductId = buildCartMap(result.data.items)
+                        )
+                    }
+                }
+                is Resource.Error -> _uiState.update { it.copy(addToCartMessage = result.message) }
                 is Resource.Loading -> {}
             }
         }

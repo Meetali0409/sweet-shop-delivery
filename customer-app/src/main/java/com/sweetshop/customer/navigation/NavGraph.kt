@@ -6,11 +6,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -26,6 +26,7 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import com.sweetshop.customer.ui.auth.LoginScreen
 import com.sweetshop.customer.ui.auth.RegisterScreen
+import com.sweetshop.customer.ui.cart.CartBadgeViewModel
 import com.sweetshop.customer.ui.cart.CartScreen
 import com.sweetshop.customer.ui.categories.CategoriesScreen
 import com.sweetshop.customer.ui.checkout.AddAddressScreen
@@ -55,7 +56,8 @@ fun SweetShopNavGraph(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    var cartItemCount by remember { mutableIntStateOf(0) }
+    val cartBadgeViewModel: CartBadgeViewModel = hiltViewModel()
+    val cartItemCount by cartBadgeViewModel.cartItemCount.collectAsStateWithLifecycle()
 
     // Observe session expired events
     val context = LocalContext.current
@@ -165,8 +167,7 @@ fun SweetShopNavGraph(
                     },
                     onNavigateToCategories = {
                         navController.navigate(Screen.Categories.route)
-                    },
-                    onCartCountChanged = { count -> cartItemCount = count }
+                    }
                 )
             }
 

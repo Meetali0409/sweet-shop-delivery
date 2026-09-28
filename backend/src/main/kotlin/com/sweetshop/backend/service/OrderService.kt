@@ -189,9 +189,9 @@ class OrderService(
         return savedOrder.toDto(address)
     }
 
-    fun getOrders(userId: Long, status: OrderStatus?, pageable: Pageable): PagedResponse<OrderListDto> {
-        val page = if (status != null) {
-            orderRepository.findByUserIdAndOrderStatus(userId, status, pageable)
+    fun getOrders(userId: Long, statuses: List<OrderStatus>?, pageable: Pageable): PagedResponse<OrderListDto> {
+        val page = if (!statuses.isNullOrEmpty()) {
+            orderRepository.findByUserIdAndOrderStatusIn(userId, statuses, pageable)
         } else {
             orderRepository.findByUserId(userId, pageable)
         }

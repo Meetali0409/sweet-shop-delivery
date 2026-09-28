@@ -32,12 +32,16 @@ class OrderController(
     @GetMapping
     fun getOrders(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
-        @RequestParam(required = false) status: OrderStatus?,
+        @RequestParam(required = false) status: String?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "10") size: Int
     ): ResponseEntity<ApiResponse<PagedResponse<OrderListDto>>> {
         val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
-        val orders = orderService.getOrders(userPrincipal.id, status, pageable)
+        val statuses = status?.split(",")
+            ?.map { it.trim() }
+            ?.filter { it.isNotEmpty() }
+            ?.map { OrderStatus.valueOf(it) }
+        val orders = orderService.getOrders(userPrincipal.id, statuses, pageable)
         return ResponseEntity.ok(ApiResponse(success = true, data = orders))
     }
 

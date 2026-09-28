@@ -302,18 +302,20 @@ private fun SalesOverviewSection(
                 ) {
                     Canvas(modifier = Modifier.fillMaxSize()) {
                         val barWidth = (size.width - (salesData.size - 1) * 8.dp.toPx()) / salesData.size
+                        val maxCornerRadius = 4.dp.toPx()
                         salesData.forEachIndexed { index, data ->
                             val barHeight = if (maxRevenue > 0) {
                                 (data.revenue / maxRevenue * (size.height * 0.85f)).toFloat()
                             } else 0f
                             val x = index * (barWidth + 8.dp.toPx())
                             val y = size.height - barHeight
+                            val cornerRadius = minOf(maxCornerRadius, barWidth / 2, barHeight / 2)
 
                             drawRoundRect(
                                 color = AdminPrimary.copy(alpha = 0.7f + (0.3f * data.revenue / maxRevenue).toFloat()),
                                 topLeft = Offset(x, y),
                                 size = Size(barWidth, barHeight),
-                                cornerRadius = androidx.compose.ui.geometry.CornerRadius(4.dp.toPx())
+                                cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius)
                             )
                         }
                     }
@@ -325,7 +327,7 @@ private fun SalesOverviewSection(
                 ) {
                     salesData.take(7).forEach { data ->
                         Text(
-                            text = data.periodLabel.take(3),
+                            text = data.periodLabel.substringBefore(" "),
                             style = MaterialTheme.typography.labelSmall,
                             color = Color.Gray
                         )

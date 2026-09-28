@@ -31,7 +31,7 @@ class ProductService(
     ): PagedResponse<ProductListDto> {
         val page = when {
             !search.isNullOrBlank() -> productRepository.searchProducts(search, pageable)
-            categoryId != null -> productRepository.findByCategoryIdAndIsAvailableTrue(categoryId, pageable)
+            categoryId != null -> productRepository.findByCategoriesIdAndIsAvailableTrue(categoryId, pageable)
             else -> productRepository.findByIsAvailableTrue(pageable)
         }
 
@@ -82,10 +82,12 @@ class ProductService(
 
     @Transactional
     fun createProduct(request: CreateProductRequest): ProductDto {
-        val category = categoryRepository.findById(request.categoryId)
-            .orElseThrow { ResourceNotFoundException("Category not found with id: ${request.categoryId}") }
+        val categories = request.categoryIds.map { catId ->
+            categoryRepository.findById(catId)
+                .orElseThrow { ResourceNotFoundException("Category not found with id: $catId") }
+        }
 
-        val product = request.toEntity(category)
+        val product = request.toEntity(categories)
 
         request.weights?.forEach { weightReq ->
             val weight = ProductWeight(
@@ -109,10 +111,13 @@ class ProductService(
 
         request.name?.let { product.name = it }
         request.description?.let { product.description = it }
-        request.categoryId?.let { catId ->
-            val category = categoryRepository.findById(catId)
-                .orElseThrow { ResourceNotFoundException("Category not found with id: $catId") }
-            product.category = category
+        request.categoryIds?.let { catIds ->
+            val categories = catIds.map { catId ->
+                categoryRepository.findById(catId)
+                    .orElseThrow { ResourceNotFoundException("Category not found with id: $catId") }
+            }
+            product.category = categories.first()
+            product.categories = categories.toMutableSet()
         }
         request.imageUrl?.let { product.imageUrl = it }
         request.price?.let { product.price = it }

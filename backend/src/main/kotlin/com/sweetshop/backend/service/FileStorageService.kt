@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -84,7 +85,9 @@ class LocalFileStorageService(
     }
 
     override fun getFileUrl(fileName: String): String {
-        return "/api/v1/files/$fileName"
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+            .path("/api/v1/files/$fileName")
+            .toUriString()
     }
 
     override fun deleteFile(fileName: String) {

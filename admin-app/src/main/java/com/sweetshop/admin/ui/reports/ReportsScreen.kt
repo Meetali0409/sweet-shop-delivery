@@ -253,12 +253,15 @@ fun ReportsScreen(
                                             val gap = 6.dp.toPx()
                                             val barWidth = (size.width - (barCount - 1) * gap) / barCount
 
+                                            val maxCornerRadius = 4.dp.toPx()
+
                                             state.salesOverview.forEachIndexed { index, data ->
                                                 val barHeight = if (maxRevenue > 0) {
                                                     (data.revenue / maxRevenue * (size.height * 0.9f)).toFloat()
                                                 } else 0f
                                                 val x = index * (barWidth + gap)
                                                 val y = size.height - barHeight
+                                                val cornerRadius = minOf(maxCornerRadius, barWidth / 2, barHeight / 2)
 
                                                 drawRoundRect(
                                                     color = AdminPrimary.copy(
@@ -266,7 +269,7 @@ fun ReportsScreen(
                                                     ),
                                                     topLeft = Offset(x, y),
                                                     size = Size(barWidth, barHeight),
-                                                    cornerRadius = CornerRadius(4.dp.toPx())
+                                                    cornerRadius = CornerRadius(cornerRadius)
                                                 )
                                             }
                                         }
@@ -281,7 +284,7 @@ fun ReportsScreen(
                                     ) {
                                         state.salesOverview.forEach { data ->
                                             Text(
-                                                text = data.periodLabel.take(3),
+                                                text = data.periodLabel.substringBefore(" "),
                                                 style = MaterialTheme.typography.labelSmall,
                                                 color = Color.Gray,
                                                 textAlign = TextAlign.Center,

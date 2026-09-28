@@ -25,14 +25,14 @@ class CategoryService(
     @Cacheable(CacheConfig.CATEGORIES_CACHE)
     fun getCategories(): List<CategoryDto> {
         return categoryRepository.findByIsActiveTrueOrderBySortOrder().map { category ->
-            val productCount = productRepository.countByCategoryId(category.id)
+            val productCount = productRepository.countByCategoriesId(category.id)
             category.toDto(productCount)
         }
     }
 
     fun getAllCategories(): List<CategoryDto> {
         return categoryRepository.findAll().sortedBy { it.sortOrder }.map { category ->
-            val productCount = productRepository.countByCategoryId(category.id)
+            val productCount = productRepository.countByCategoriesId(category.id)
             category.toDto(productCount)
         }
     }
@@ -40,7 +40,7 @@ class CategoryService(
     fun getCategoryById(id: Long): CategoryDto {
         val category = categoryRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("Category not found with id: $id") }
-        val productCount = productRepository.countByCategoryId(category.id)
+        val productCount = productRepository.countByCategoriesId(category.id)
         return category.toDto(productCount)
     }
 
@@ -71,7 +71,7 @@ class CategoryService(
 
         val savedCategory = categoryRepository.save(category)
         logger.info("Category updated: id={}, name={}", savedCategory.id, savedCategory.name)
-        val productCount = productRepository.countByCategoryId(savedCategory.id)
+        val productCount = productRepository.countByCategoriesId(savedCategory.id)
         return savedCategory.toDto(productCount)
     }
 

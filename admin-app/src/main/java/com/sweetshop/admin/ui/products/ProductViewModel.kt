@@ -43,7 +43,7 @@ data class ProductFormState(
     val product: ProductDto? = null,
     val name: String = "",
     val description: String = "",
-    val categoryId: Long = 0,
+    val categoryIds: Set<Long> = emptySet(),
     val imageUrl: String = "",
     val selectedImageUri: Uri? = null,
     val isUploadingImage: Boolean = false,
@@ -164,7 +164,7 @@ class ProductViewModel @Inject constructor(
                             product = p,
                             name = p.name,
                             description = p.description ?: "",
-                            categoryId = p.categoryId,
+                            categoryIds = p.categoryIds?.ifEmpty { listOf(p.categoryId) }?.toSet() ?: setOf(p.categoryId),
                             imageUrl = p.imageUrl ?: "",
                             price = p.price.toString(),
                             discountPrice = p.discountPrice?.toString() ?: "",
@@ -192,7 +192,6 @@ class ProductViewModel @Inject constructor(
             when (field) {
                 "name" -> state.copy(name = value as String)
                 "description" -> state.copy(description = value as String)
-                "categoryId" -> state.copy(categoryId = value as Long)
                 "imageUrl" -> state.copy(imageUrl = value as String)
                 "price" -> state.copy(price = value as String)
                 "discountPrice" -> state.copy(discountPrice = value as String)
@@ -206,6 +205,17 @@ class ProductViewModel @Inject constructor(
                 "allergenInfo" -> state.copy(allergenInfo = value as String)
                 else -> state
             }
+        }
+    }
+
+    fun toggleCategory(categoryId: Long) {
+        _formState.update { state ->
+            val newSelection = if (categoryId in state.categoryIds) {
+                state.categoryIds - categoryId
+            } else {
+                state.categoryIds + categoryId
+            }
+            state.copy(categoryIds = newSelection)
         }
     }
 
@@ -256,8 +266,8 @@ class ProductViewModel @Inject constructor(
             _formState.update { it.copy(error = "Valid price is required") }
             return
         }
-        if (state.categoryId == 0L) {
-            _formState.update { it.copy(error = "Please select a category") }
+        if (state.categoryIds.isEmpty()) {
+            _formState.update { it.copy(error = "Please select at least one category") }
             return
         }
 
@@ -270,7 +280,7 @@ class ProductViewModel @Inject constructor(
                     UpdateProductRequest(
                         name = state.name,
                         description = state.description.ifBlank { null },
-                        categoryId = state.categoryId,
+                        categoryIds = state.categoryIds.toList(),
                         imageUrl = state.imageUrl.ifBlank { null },
                         price = state.price.toDoubleOrNull(),
                         discountPrice = state.discountPrice.toDoubleOrNull(),
@@ -289,7 +299,7 @@ class ProductViewModel @Inject constructor(
                     CreateProductRequest(
                         name = state.name,
                         description = state.description.ifBlank { null },
-                        categoryId = state.categoryId,
+                        categoryIds = state.categoryIds.toList(),
                         imageUrl = state.imageUrl.ifBlank { null },
                         price = state.price.toDouble(),
                         discountPrice = state.discountPrice.toDoubleOrNull(),

@@ -106,7 +106,9 @@ class ProductRepositoryImpl @Inject constructor(
         return try {
             val response = api.getCategories()
             if (response.isSuccessful && response.body()?.success == true) {
-                val categories = response.body()!!.data!!.map { it.toDomain() }
+                val categories = response.body()!!.data!!
+                    .map { it.toDomain() }
+                    .filter { it.productCount > 0 }
                 Resource.Success(categories)
             } else {
                 Resource.Error(response.body()?.error ?: "Failed to load categories")

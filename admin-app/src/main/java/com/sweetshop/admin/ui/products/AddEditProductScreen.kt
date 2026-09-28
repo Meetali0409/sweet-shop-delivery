@@ -1,9 +1,12 @@
 package com.sweetshop.admin.ui.products
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -99,6 +102,33 @@ fun AddEditProductScreen(
         }
     }
 
+    fun launchCamera() {
+        val photoFile = File.createTempFile("product_", ".jpg", context.cacheDir)
+        val uri = FileProvider.getUriForFile(
+            context, "${context.packageName}.fileprovider", photoFile
+        )
+        cameraImageUri = uri
+        cameraLauncher.launch(uri)
+    }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            launchCamera()
+        }
+    }
+
+    fun requestCameraAndLaunch() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            launchCamera()
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
     LaunchedEffect(productId) {
         if (productId != null) {
             viewModel.loadProduct(productId)
@@ -164,17 +194,21 @@ fun AddEditProductScreen(
                     singleLine = true
                 )
 
-                // Category Dropdown
+                // Categories (multi-select)
                 var categoryExpanded by remember { mutableStateOf(false) }
+                val selectedCategoryNames = state.categories
+                    .filter { it.id in state.categoryIds }
+                    .joinToString(", ") { it.name }
                 ExposedDropdownMenuBox(
                     expanded = categoryExpanded,
                     onExpandedChange = { categoryExpanded = it }
                 ) {
                     OutlinedTextField(
-                        value = state.categories.find { it.id == state.categoryId }?.name ?: "",
+                        value = selectedCategoryNames,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Category *") },
+                        label = { Text("Categories *") },
+                        placeholder = { Text("Select one or more categories") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -187,11 +221,17 @@ fun AddEditProductScreen(
                     ) {
                         state.categories.forEach { category ->
                             DropdownMenuItem(
-                                text = { Text(category.name) },
-                                onClick = {
-                                    viewModel.onFormFieldChange("categoryId", category.id)
-                                    categoryExpanded = false
-                                }
+                                text = {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        androidx.compose.material3.Checkbox(
+                                            checked = category.id in state.categoryIds,
+                                            onCheckedChange = { viewModel.toggleCategory(category.id) }
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(category.name)
+                                    }
+                                },
+                                onClick = { viewModel.toggleCategory(category.id) }
                             )
                         }
                     }
@@ -209,7 +249,12 @@ fun AddEditProductScreen(
                         .height(180.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp))
-                        .background(Color(0xFFF5F5F5)),
+                        .background(Color(0xFFF5F5F5))
+                        .clickable {
+                            galleryLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     val displayUri = state.selectedImageUri
@@ -265,14 +310,7 @@ fun AddEditProductScreen(
                         Text("Gallery")
                     }
                     OutlinedButton(
-                        onClick = {
-                            val photoFile = File.createTempFile("product_", ".jpg", context.cacheDir)
-                            val uri = FileProvider.getUriForFile(
-                                context, "${context.packageName}.fileprovider", photoFile
-                            )
-                            cameraImageUri = uri
-                            cameraLauncher.launch(uri)
-                        },
+                        onClick = { requestCameraAndLaunch() },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp)
                     ) {

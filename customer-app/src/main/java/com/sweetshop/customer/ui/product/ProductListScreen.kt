@@ -156,7 +156,10 @@ fun ProductListScreen(
                             ProductCard(
                                 product = product,
                                 onClick = { onNavigateToProductDetail(product.id) },
-                                onAddToCart = { viewModel.addToCart(product.id) }
+                                onAddToCart = { viewModel.addToCart(product.id) },
+                                quantityInCart = state.cartItemsByProductId[product.id]?.quantity ?: 0,
+                                onIncrement = { viewModel.incrementCartItem(product.id) },
+                                onDecrement = { viewModel.decrementCartItem(product.id) }
                             )
                         }
                     }

@@ -22,6 +22,8 @@ interface OrderRepository : JpaRepository<Order, Long> {
 
     fun findByUserIdAndOrderStatus(userId: Long, status: OrderStatus, pageable: Pageable): Page<Order>
 
+    fun findByUserIdAndOrderStatusIn(userId: Long, statuses: List<OrderStatus>, pageable: Pageable): Page<Order>
+
     fun countByUserId(userId: Long): Long
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.createdAt BETWEEN :from AND :to")
