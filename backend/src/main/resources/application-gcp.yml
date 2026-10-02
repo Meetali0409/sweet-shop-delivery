@@ -1,0 +1,62 @@
+# Profile for running on Google Cloud Run with a Neon Postgres database.
+# Activate with SPRING_PROFILES_ACTIVE=gcp
+#
+# IMPORTANT: DATABASE_URL should point at Neon's POOLED connection endpoint
+# (the host with the "-pooler" suffix shown on the Neon dashboard) and
+# disable server-side prepared statements, since Neon's pooler runs
+# PgBouncer in transaction mode which doesn't support them, e.g.:
+#   jdbc:postgresql://ep-xxxx-pooler.us-east-2.aws.neon.tech/sweetshop?sslmode=require&prepareThreshold=0
+# Cloud Run can scale out to many container instances, each holding its own
+# connection pool, so the pool size here is kept small per-instance and we
+# rely on Neon's pooler to multiplex connections across instances.
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 30000
+      idle-timeout: 300000
+      max-lifetime: 1800000
+
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+server:
+  forward-headers-strategy: framework
+
+app:
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS}
+
+  security:
+    swagger-enabled: ${SWAGGER_ENABLED:false}
+
+  rate-limit:
+    auth-requests-per-minute: 5
+    api-requests-per-minute: 60
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+logging:
+  level:
+    com.sweetshop: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    root: INFO

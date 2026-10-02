@@ -1,0 +1,73 @@
+name: Deploy Backend to Cloud Run
+
+# Manual trigger only, until GCP_* / DATABASE_URL secrets below are set to
+# real values (not the dummy placeholders in backend/.env.gcp.example).
+# Once ready, you can add a `push: { branches: [main], paths: ['backend/**'] }`
+# trigger alongside workflow_dispatch for auto-deploy on every merge.
+on:
+  workflow_dispatch: {}
+
+env:
+  GCP_REGION: us-central1
+  ARTIFACT_REPO: sweetshop
+  SERVICE_NAME: sweetshop-backend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # required for Workload Identity Federation (no static JSON key)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Ensure Artifact Registry repo exists
+        run: |
+          gcloud artifacts repositories describe "${{ env.ARTIFACT_REPO }}" \
+            --location="${{ env.GCP_REGION }}" >/dev/null 2>&1 || \
+          gcloud artifacts repositories create "${{ env.ARTIFACT_REPO }}" \
+            --repository-format=docker \
+            --location="${{ env.GCP_REGION }}" \
+            --description="Sweet Shop backend images"
+
+      - name: Build and push image
+        working-directory: backend
+        env:
+          IMAGE: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE_NAME }}
+        run: |
+          docker build -t "$IMAGE:${{ github.sha }}" -t "$IMAGE:latest" .
+          docker push "$IMAGE:${{ github.sha }}"
+          docker push "$IMAGE:latest"
+
+      - name: Deploy to Cloud Run
+        env:
+          IMAGE: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE_NAME }}
+        run: |
+          gcloud run deploy "${{ env.SERVICE_NAME }}" \
+            --image="$IMAGE:${{ github.sha }}" \
+            --region="${{ env.GCP_REGION }}" \
+            --platform=managed \
+            --allow-unauthenticated \
+            --port=8080 \
+            --min-instances=0 \
+            --max-instances=3 \
+            --memory=512Mi \
+            --cpu=1 \
+            --set-env-vars="SPRING_PROFILES_ACTIVE=gcp,DATABASE_URL=${{ secrets.DATABASE_URL }},DB_USERNAME=${{ secrets.DB_USERNAME }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},JWT_SECRET=${{ secrets.JWT_SECRET }},ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }},SWAGGER_ENABLED=false,STORAGE_TYPE=${{ secrets.STORAGE_TYPE }},RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }},RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}"
+
+      - name: Print service URL
+        run: gcloud run services describe "${{ env.SERVICE_NAME }}" --region="${{ env.GCP_REGION }}" --format="value(status.url)"

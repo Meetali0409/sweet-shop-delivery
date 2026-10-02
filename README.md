@@ -153,6 +153,44 @@ For physical device testing, update `API_BASE_URL` in the app's `build.gradle.kt
 buildConfigField("String", "API_BASE_URL", "\"http://YOUR_IP:8080/api/v1/\"")
 ```
 
+## Deployment
+
+### Google Cloud Run + Neon (recommended)
+
+The backend is a stateless Docker image, so it runs as-is on [Cloud Run](https://cloud.google.com/run) with a [Neon](https://neon.tech) Postgres database. Cloud Run's free tier (2M requests, 180K vCPU-sec, 360K GiB-sec per month) doesn't expire, unlike time-limited free trials on other providers.
+
+**One-time setup:**
+1. Create a GCP project, enable billing, and enable the Cloud Run + Artifact Registry APIs.
+2. Create a Neon project and copy its **pooled** connection string (the host with the `-pooler` suffix) from the Neon dashboard.
+3. Copy `backend/.env.gcp.example` to `backend/.env.gcp` (gitignored) and fill in real values.
+
+**Manual deploy:**
+```bash
+cd backend
+export $(cat .env.gcp | xargs)   # or export each var manually
+./scripts/deploy-gcp.sh
+```
+
+**CI/CD deploy:** `.github/workflows/backend-gcp-deploy.yml` runs the same steps via GitHub Actions using Workload Identity Federation (no static GCP keys stored in GitHub). It's `workflow_dispatch`-only (manual) until these repo secrets are set to real values:
+
+| Secret | Description |
+|---|---|
+| `GCP_PROJECT_ID` | Target GCP project id |
+| `GCP_WORKLOAD_IDENTITY_PROVIDER` | Workload Identity Federation provider resource name |
+| `GCP_SERVICE_ACCOUNT` | Service account email with Cloud Run Admin, Artifact Registry Writer, Service Account User roles |
+| `DATABASE_URL` | Neon pooled JDBC URL, e.g. `jdbc:postgresql://ep-xxxx-pooler.<region>.aws.neon.tech/sweetshop?sslmode=require&prepareThreshold=0` |
+| `DB_USERNAME`, `DB_PASSWORD` | Neon database credentials |
+| `JWT_SECRET` | 256-bit+ random secret |
+| `ALLOWED_ORIGINS`, `STORAGE_TYPE`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Same as `.env.example` |
+
+Once set, add a `push` trigger to the workflow for auto-deploy on merge to `main`.
+
+After deploying, update `API_BASE_URL` in `admin-app/build.gradle.kts` and `customer-app/build.gradle.kts` (and the `API_BASE_URL` GitHub secret used for release builds) to the new Cloud Run service URL.
+
+### Railway
+
+The repo also includes `backend/railway.toml` for deploying to Railway (the previous hosting provider) via its GitHub auto-deploy integration — no extra setup beyond linking the repo in the Railway dashboard.
+
 ## Seed Data
 
 The database is seeded with:
