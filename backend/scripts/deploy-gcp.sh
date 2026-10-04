@@ -85,6 +85,9 @@ docker push "${IMAGE}:latest"
 # vars. Before going to production, move DB_PASSWORD, JWT_SECRET and
 # RAZORPAY_KEY_SECRET into Secret Manager and reference them with
 # `--set-secrets` instead of `--set-env-vars`.
+#
+# We use ^||^ as the env-var separator (instead of the default comma)
+# because DATABASE_URL may contain commas or special characters.
 echo "==> Deploying to Cloud Run"
 gcloud run deploy "${SERVICE_NAME}" \
   --image="${IMAGE}:${TAG}" \
@@ -96,7 +99,7 @@ gcloud run deploy "${SERVICE_NAME}" \
   --max-instances=3 \
   --memory=512Mi \
   --cpu=1 \
-  --set-env-vars="SPRING_PROFILES_ACTIVE=gcp,DATABASE_URL=${DATABASE_URL},DB_USERNAME=${DB_USERNAME},DB_PASSWORD=${DB_PASSWORD},JWT_SECRET=${JWT_SECRET},ALLOWED_ORIGINS=${ALLOWED_ORIGINS},SWAGGER_ENABLED=${SWAGGER_ENABLED},STORAGE_TYPE=${STORAGE_TYPE},RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID},RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET}"
+  --set-env-vars="^||^SPRING_PROFILES_ACTIVE=gcp||DATABASE_URL=${DATABASE_URL}||DB_USERNAME=${DB_USERNAME}||DB_PASSWORD=${DB_PASSWORD}||JWT_SECRET=${JWT_SECRET}||ALLOWED_ORIGINS=${ALLOWED_ORIGINS}||SWAGGER_ENABLED=${SWAGGER_ENABLED}||STORAGE_TYPE=${STORAGE_TYPE}||RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID}||RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET}"
 
 echo "==> Done. Service URL:"
 gcloud run services describe "${SERVICE_NAME}" --region="${GCP_REGION}" --format="value(status.url)"

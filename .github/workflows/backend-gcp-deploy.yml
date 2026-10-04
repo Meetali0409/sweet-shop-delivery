@@ -67,7 +67,7 @@ jobs:
             --max-instances=3 \
             --memory=512Mi \
             --cpu=1 \
-            --set-env-vars="SPRING_PROFILES_ACTIVE=gcp,DATABASE_URL=${{ secrets.DATABASE_URL }},DB_USERNAME=${{ secrets.DB_USERNAME }},DB_PASSWORD=${{ secrets.DB_PASSWORD }},JWT_SECRET=${{ secrets.JWT_SECRET }},ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }},SWAGGER_ENABLED=false,STORAGE_TYPE=${{ secrets.STORAGE_TYPE }},RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }},RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}"
+            --set-env-vars="^||^SPRING_PROFILES_ACTIVE=gcp||DATABASE_URL=${{ secrets.DATABASE_URL }}||DB_USERNAME=${{ secrets.DB_USERNAME }}||DB_PASSWORD=${{ secrets.DB_PASSWORD }}||JWT_SECRET=${{ secrets.JWT_SECRET }}||ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}||SWAGGER_ENABLED=false||STORAGE_TYPE=${{ secrets.STORAGE_TYPE }}||RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }}||RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}"
 
       - name: Print service URL
         run: gcloud run services describe "${{ env.SERVICE_NAME }}" --region="${{ env.GCP_REGION }}" --format="value(status.url)"
